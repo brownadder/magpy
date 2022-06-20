@@ -35,7 +35,6 @@ def evaluate(H, t):
 
     return out
 
-
 def _mag1(H, t0, tf):
     # first term of Magnus expansion
     total = 0
@@ -51,16 +50,27 @@ def _mag1(H, t0, tf):
 
     return liouvillian(total)
 
-def _mag2(H, t0, tf):
-    return 0 # TODO
+def _mag2(H, t0, tf): # TODO
+    # second term of Magnus expansion
+    total = 0
 
+    return total
 
-def setup(H):
+def lvnsolve_new(H, rho0, tlist):
     # change instances of single matrices in H to lists with single items
     for coeff in H:
         if isinstance(H[coeff], LOp):
             H[coeff] = [H[coeff]]
 
+    states = [vec(rho0)]
+    for i in range(len(tlist) - 1):
+        omega = (_mag1(H, tlist[i], tlist[i+1])
+                 + _mag2(H, tlist[i], tlist[i+1]))
+
+        states.append(scipy.linalg.expm(omega) @ states[i])
+        states[i] = unvec(states[-1])
+
+    return states
 
 def f(t): return t
 def g(t): return t**2
@@ -69,6 +79,3 @@ omega = 1
 
 H_new = {f : [LOp(2,1,sigmax()), LOp(2,2,sigmax())], g : LOp(2,2,sigmay())}
 H_old = [[f, h, 0], [f, g, 0]]
-
-setup(H_new)
-print(_mag1(H_new, 0, 1) - magpy._magnus_first_term(H_old, np.zeros((4, 4)), 0, 1))
