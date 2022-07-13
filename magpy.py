@@ -1,3 +1,6 @@
+# Copyright (c) 2021-2022 Danny Goodacre and Pranav Singh
+# Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+
 import numpy as np
 import scipy.integrate
 
