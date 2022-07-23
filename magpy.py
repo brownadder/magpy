@@ -252,17 +252,19 @@ class LOp:
 
         >>> mp.LOp(1, 1, mp.sigmax())
 
-    Two spin:
+    Two spins:
         H = sigmax x Id
 
         >>> mp.LOp(2, 1, mp.sigmax())
 
     Two spins interacting:
-        TODO
+        H = sigmax x sigmay
+
+        >>> mp.LOp(2, (1,mp.sigmax()), (1,mp.sigmay()))
 
     """
 
-    def __init__(self, n, pos, ham):
+    def __init__(self, n, *args):
         """
         Construct matrix representing the quantum operator.
 
@@ -270,16 +272,24 @@ class LOp:
         ----------
         n : int
             Number of spins in system. Must be greater than or equal to 1.
-        pos : int
-            Position of given matrix in system. 
-        ham : ndarray
-            Matrix corresponding to specified spin.
-
         """
-        array = [np.eye(2) for _ in range(n)]
-        array[pos - 1] = ham
+        if n > 1:
+            # multiple spins
+            matrices = n * [np.eye(2)]
+            
+            if type(args[0]) == type(1):
+                matrices[args[0] - 1] = args[1]
+            else:
+                for spin in args:
+                    matrices[spin[0] - 1] = spin[1]
 
-        self.data = kron(array)
+            self.data = kron(matrices)
+        else:
+            # single spin
+            if type(args[0]) == type((1,)):
+                self.data = args[0][1]
+            else:
+                self.data = args[1]
 
     def __call__(self):
         return self.data
@@ -346,8 +356,16 @@ class System:
         >>> H = {f : [mp.LOp(2,1,mp.sigmax()), mp.LOp(2,2,mp.sigmay())], 
         g : mp.LOp(2,1,mp.sigmaz())}
 
-    Interacting system:
-        TODO
+    Interacting systems:
+        H(t) = f(t)*(sigmax x Id) + g(t)*(sigmax x sigmay)
+
+        >>> H = {f : mp.LOp(2,1,mp.sigmax()), 
+        g : mp.LOp(2,(1,mp.sigmax()),(2,mp.sigmay()))}
+
+        H(t) = f(t)*(Id x sigmax x Id) + g(t)*(sigmax x sigma x Id)
+
+        >>> H = {f : mp.LOp(3,2,mp.sigmax()), 
+                 g : mp.LOp(3,(1,mp.sigmax()),(2,mp.sigmax()))}
 
     """
 
@@ -476,9 +494,13 @@ class System:
         ndarray
             Density matrices calculated across tlist.
 
-        Examples
-        --------
-        TODO
+        Example
+        -------
+        >>> H = {f : mp.LOp(2,1,mp.sigmax())}
+        >>> q_sys = mp.System(H)
+        >>> rho0 = mp.LOp(2,1,mp.sigmay())
+        >>> tlist = mp.linspace(0, 10, 0.5**5)
+        >>> q_sys.lvn_solve(rho0, tlist)
 
         """
         states = [vec(rho0())]
