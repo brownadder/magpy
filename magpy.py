@@ -234,11 +234,11 @@ def frobenius(a, b):
         return np.trace(a.conj().T @ b)
 
 
-class LOp:
+class HOp: #TODO
     """
-    Represents a constant quantum operator. This can be for a system containing
-    one spin, for a single spin in part of a larger system, or for an 
-    interactive component of a larger system.
+    Represents a constant Hamiltonian operator. This can be for a system 
+    containing one spin, for a single spin in part of a larger system, or for 
+    an interactive component of a larger system.
 
     Attributes
     ----------
@@ -250,17 +250,17 @@ class LOp:
     One spin:
         H = sigmax
 
-        >>> mp.LOp(1, 1, mp.sigmax())
+        >>> mp.HOp(1, 1, mp.sigmax())
 
     Two spins:
         H = sigmax x Id
 
-        >>> mp.LOp(2, 1, mp.sigmax())
+        >>> mp.HOp(2, 1, mp.sigmax())
 
     Two spins interacting:
         H = sigmax x sigmay
 
-        >>> mp.LOp(2, (1,mp.sigmax()), (1,mp.sigmay()))
+        >>> mp.HOp(2, (1,mp.sigmax()), (2,mp.sigmay()))
 
     """
 
@@ -311,7 +311,7 @@ class System:
 
             H = { f_1 : H_1, f_2 : H_2, ... },
         
-        where each f_i is a function and each H_i is a LOp object. 
+        where each f_i is a function and each H_i is a HOp object. 
 
     Attributes
     ----------
@@ -343,29 +343,29 @@ class System:
     Single spin system: 
         H(t) = f(t)*sigmax + g(t)*sigmay
 
-        >>> H = {f : mp.LOp(1,1,mp.sigmax()), g : mp.LOp(1,1,mp.sigmay())}
+        >>> H = {f : mp.HOp(1,1,mp.sigmax()), g : mp.HOp(1,1,mp.sigmay())}
 
     Two spin system: 
         H(t) = f(t)*(sigmax x Id) + g(t)*(Id x sigmay)
 
-        >>> H = {f : mp.LOp(2,1,mp.sigmax()), g : mp.LOp(2,2,mp.sigmay())}
+        >>> H = {f : mp.HOp(2,1,mp.sigmax()), g : mp.HOp(2,2,mp.sigmay())}
 
     Two spin system with repeated coefficient:
         H(t) = f(t)*(sigmax x Id) + f(t)*(Id x sigmay) + g(t)*(sigmaz x Id)
 
-        >>> H = {f : [mp.LOp(2,1,mp.sigmax()), mp.LOp(2,2,mp.sigmay())], 
-        g : mp.LOp(2,1,mp.sigmaz())}
+        >>> H = {f : [mp.HOp(2,1,mp.sigmax()), mp.HOp(2,2,mp.sigmay())], 
+        g : mp.HOp(2,1,mp.sigmaz())}
 
     Interacting systems:
         H(t) = f(t)*(sigmax x Id) + g(t)*(sigmax x sigmay)
 
-        >>> H = {f : mp.LOp(2,1,mp.sigmax()), 
-        g : mp.LOp(2,(1,mp.sigmax()),(2,mp.sigmay()))}
+        >>> H = {f : mp.HOp(2,1,mp.sigmax()), 
+        g : mp.HOp(2,(1,mp.sigmax()),(2,mp.sigmay()))}
 
         H(t) = f(t)*(Id x sigmax x Id) + g(t)*(sigmax x sigma x Id)
 
-        >>> H = {f : mp.LOp(3,2,mp.sigmax()), 
-                 g : mp.LOp(3,(1,mp.sigmax()),(2,mp.sigmax()))}
+        >>> H = {f : mp.HOp(3,2,mp.sigmax()), 
+                 g : mp.HOp(3,(1,mp.sigmax()),(2,mp.sigmax()))}
 
     """
 
@@ -381,7 +381,7 @@ class System:
 
                 H = { f_1 : H_1, f_2 : H_2, ... },
             
-            where f_i are functions and H_i are LOp objects.
+            where f_i are functions and H_i are HOp objects.
 
         """
         self.H1 = self.__setup_first_term(H)
@@ -392,14 +392,14 @@ class System:
 
     def __setup_first_term(self, H):
         """
-        Pre-calculate Liouvillians for matrices (LOp) in H 
+        Pre-calculate Liouvillians for matrices (HOp) in H 
         for first term.
         """
         H1 = {}
 
         for coeff in H:
-            if isinstance(H[coeff], LOp):
-                # convert single LOp to list of (single) LOp
+            if isinstance(H[coeff], HOp):
+                # convert single HOp to list of (single) HOp
                 H[coeff] = [H[coeff]]
 
             matrices = []
@@ -412,7 +412,7 @@ class System:
 
     def __setup_second_term(self, H):
         """
-        Pre-calculate Liouvillians for matrices (LOp) in H 
+        Pre-calculate Liouvillians for matrices (HOp) in H 
         for first term.
         """
         temp = []
@@ -496,9 +496,9 @@ class System:
 
         Example
         -------
-        >>> H = {f : mp.LOp(2,1,mp.sigmax())}
+        >>> H = {f : mp.HOp(2,1,mp.sigmax())}
         >>> q_sys = mp.System(H)
-        >>> rho0 = mp.LOp(2,1,mp.sigmay())
+        >>> rho0 = mp.HOp(2,1,mp.sigmay())
         >>> tlist = mp.linspace(0, 10, 0.5**5)
         >>> q_sys.lvn_solve(rho0, tlist)
 
