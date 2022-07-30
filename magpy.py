@@ -14,14 +14,14 @@ def sigmaz():
     return np.array([[1, 0], [0, -1]])
 
 
-def vec(mat):
+def vec(arr):
     """
     Return vectorised form of input using column-major (Fortran) ordering.
 
     Parameters
     ----------
     mat : ndarray
-        Matrix.
+        Array.
 
     Returns
     -------
@@ -30,7 +30,7 @@ def vec(mat):
 
     """
 
-    return np.asarray(mat).flatten('F')
+    return np.asarray(arr).flatten('F')
 
 
 def unvec(vec, c=None):
@@ -42,13 +42,13 @@ def unvec(vec, c=None):
     vec : ndarray
         Vector of elements.
     c : int, optional
-        Desired length of columns in matrix. Infers square matrix if so.
+        Desired length of columns in array. Infers square array if possible.
         The default is None.
 
     Returns
     -------
     ndarray
-        Matrix.
+        Array.
 
     """
     vec = np.array(vec)
@@ -79,6 +79,15 @@ def unvec(vec, c=None):
     n = int(len(vec) / c)
 
     return vec.reshape((c, n), order='F')
+
+
+def is_square(arr):
+    """Return if array is square or not.
+    """
+    try:
+        return arr.shape[0] == arr.shape[1]
+    except:
+        return False
 
 
 def liouvillian(H):
@@ -234,7 +243,7 @@ def frobenius(a, b):
         return np.trace(a.conj().T @ b)
 
 
-class HOp: #TODO
+class HOp:
     """
     Represents a constant Hamiltonian operator. This can be for a system 
     containing one spin, for a single spin in part of a larger system, or for 
@@ -250,6 +259,7 @@ class HOp: #TODO
     One spin:
         H = sigmax
 
+        >>> mp.HOp(mp.sigmax())
         >>> mp.HOp(1, 1, mp.sigmax())
 
     Two spins:
@@ -264,32 +274,34 @@ class HOp: #TODO
 
     """
 
-    def __init__(self, n, *args):
+    def __init__(self, *args):
         """
         Construct matrix representing the quantum operator.
-
-        Parameters
-        ----------
-        n : int
-            Number of spins in system. Must be greater than or equal to 1.
         """
-        if n > 1:
-            # multiple spins
-            matrices = n * [np.eye(2)]
-            
-            if type(args[0]) == type(1):
-                matrices[args[0] - 1] = args[1]
+
+        if not args:
+            raise TypeError("input cannot be empty")
+
+        if len(args) == 1:
+            if is_square(args[0]):
+                self.data = args[0]
+            elif args[0][0] == 1 and is_square(args[0][1]):
+                    self.data = args[0][1]
             else:
-                for spin in args:
-                    matrices[spin[0] - 1] = spin[1]
+                raise ValueError("invalid input")
+        elif isinstance(args[1], tuple):
+            matrices = args[0] * [np.eye(2)]
+
+            for spin in args[1:]:
+                matrices[spin[0] - 1] = spin[1]
 
             self.data = kron(matrices)
+        elif args[0] >= args[1] and is_square(args[2]):
+            matrices = args[0] * [np.eye(2)]
+            matrices[args[1] - 1] = args[2]
+            self.data = kron(matrices)
         else:
-            # single spin
-            if type(args[0]) == type((1,)):
-                self.data = args[0][1]
-            else:
-                self.data = args[1]
+            raise ValueError("invalid input")
 
     def __call__(self):
         return self.data
