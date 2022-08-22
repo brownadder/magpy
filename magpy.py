@@ -428,7 +428,7 @@ class System:
     def __setup_second_term(self, H):
         """
         Pre-calculate Liouvillians for matrices (HOp) in H 
-        for first term.
+        for second term.
         """
         temp = []
 
@@ -445,19 +445,11 @@ class System:
         for i in range(n):
             for j in range(n):
                 if i != j:
-                    if (isinstance(temp[i][0], (int, float)) 
-                        and isinstance(temp[j][0], (int, float))):
-                        f = temp[i][0] * temp[j][0]
-                    elif isinstance(temp[i][0], (int, float)):
-                        def f(y, x): return temp[i][0] * temp[j][0](x)
-                    elif isinstance(temp[j][0], (int, float)):
-                        def f(y, x): return temp[i][0](y) * temp[j][0]
-                    else:
-                        def f(y,x): return temp[i][0](y) * temp[j][0](x)
+                    def f(y, x): return temp[i][0](y) * temp[j][0](x)
 
-                    H2[f] = 1j * liouvillian(commutator(temp[i][1](), 
-                                                                temp[j][1]()))
-        
+                    H2[f] = 0.5j * liouvillian(commutator(temp[i][1], 
+                                                                temp[j][1]))
+                                                                
         return H2
 
     def __eval_first_term(self, t0, tf):
