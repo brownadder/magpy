@@ -5,14 +5,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "magpy"
 authors = [
-    { name = "Danny Goodacre", email = "dannygoodacre1@gmail.com"},
+    { name = "Danny Goodacre", email = "djrg20@bath.ac.uk"},
     { name = "Pranav Singh", email = "ps2106@bath.ac.uk"}
 ]
 description = "Magnus based time-integration for spins and qubits under a magnetic field"
 readme = "README.md"
 license = { file="LICENSE"}
 requires-python = ">=3.8.10"
-requires = [
+dependencies = [
     "numpy>=1.23.2",
     "scipy>=1.9.0"
 ]

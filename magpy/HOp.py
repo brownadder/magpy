@@ -41,24 +41,28 @@ class HOp:
         if not args:
             raise TypeError("input cannot be empty")
 
-        if len(args) == 1:
-            if is_square(args[0]):
-                self.data = args[0]
-            elif args[0][0] == 1 and is_square(args[0][1]):
-                    self.data = args[0][1]
-            else:
-                raise ValueError("invalid input")
+        if len(args) == 1 and is_square(args[0]):
+            # single ndarray
+
+            self.data = args[0]
+
         elif isinstance(args[1], tuple):
+            # list of tuples (with pos and ndarray)
+
             matrices = args[0] * [eye(2)]
 
             for spin in args[1:]:
                 matrices[spin[0] - 1] = spin[1]
 
             self.data = kron(matrices)
+            
         elif args[0] >= args[1] and is_square(args[2]):
+            # multi-spin system with one spin specified
+
             matrices = args[0] * [eye(2)]
             matrices[args[1] - 1] = args[2]
             self.data = kron(matrices)
+
         else:
             raise ValueError("invalid input")
 
