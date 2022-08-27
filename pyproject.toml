@@ -1,5 +1,5 @@
 [project]
-name = "magpy_test"
+name = "magpy"
 version = "1.0.0"
 description = "Magnus based time-integration for spins and qubits under a magnetic field."
 readme = "README.md"
