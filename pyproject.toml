@@ -1,9 +1,9 @@
 [project]
-name = "magpy"
+name = "magpy_test"
 version = "1.0.0"
 description = "Magnus based time-integration for spins and qubits under a magnetic field."
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.7"
 license = { text = "MIT" }
 
 authors = [
@@ -12,8 +12,8 @@ authors = [
 ]
 
 dependencies = [
-    "numpy>=1.23.2",
-    "scipy>=1.9.0"
+    "numpy>=1.16.5",
+    "scipy>=1.7"
 ]
 
 classifiers = [
