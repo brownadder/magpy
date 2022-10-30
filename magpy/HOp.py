@@ -18,50 +18,79 @@ class HOp:
     One spin:
         H = sigmax
 
-        >>> mp.HOp(mp.sigmax())
-        >>> mp.HOp(1, 1, mp.sigmax())
+        >>> mp.HOp(operations = (mp.sigmax()))
+        >>> mp.HOp(operations = (1, 1, mp.sigmax()))
 
     Two spins:
         H = sigmax x Id
 
-        >>> mp.HOp(2, 1, mp.sigmax())
+        >>> mp.HOp(operations = (2, 1, mp.sigmax()))
 
     Two spins interacting:
         H = sigmax x sigmay
 
-        >>> mp.HOp(2, (1,mp.sigmax()), (2,mp.sigmay()))
+        >>> mp.HOp(operations = (2, (1,mp.sigmax()), (2,mp.sigmay())))
 
     """
 
-    def __init__(self, *args):
+    def __init__(
+        self, 
+        operations = None,
+        matrix = None,
+        ):
         """
         Construct matrix representing the quantum operator.
         """
 
-        if not args:
-            raise TypeError("input cannot be empty")
+        if operations == None:
+        
+            if isinstance(matrix,np.ndarray) and is_square(matrix):
+                # when input matrix is a numpy array
+                self.data = matrix
 
-        if len(args) == 1 and is_square(args[0]):
+            elif isinstance(matrix, list) and is_square(np.array(matrix)):
+                # when input matrix is a list, convert it to numpy array
+                self.data = np.array(matrix, dtype=complex)
+
+            elif matrix is None:
+        
+                raise TypeError("input cannot be empty")
+
+        elif len(operations) == 1 and is_square(operations[0]):
             # single ndarray
 
-            self.data = args[0]
+            if matrix is None:
+                self.data = operations[0]
 
-        elif isinstance(args[1], tuple):
+            else:
+                raise ValueError("invalid input")
+
+        elif isinstance(operations[1], tuple):
             # list of tuples (with pos and ndarray)
 
-            matrices = args[0] * [eye(2)]
+            if matrix is None:
 
-            for spin in args[1:]:
-                matrices[spin[0] - 1] = spin[1]
+                matrices = operations[0] * [eye(2)]
 
-            self.data = kron(matrices)
+                for spin in operations[1:]:
+                    matrices[spin[0] - 1] = spin[1]
+
+                self.data = kron(matrices)
+                
+            else:
+                raise ValueError("invalid input")
             
-        elif args[0] >= args[1] and is_square(args[2]):
+        elif operations[0] >= operations[1] and is_square(operations[2]):
             # multi-spin system with one spin specified
 
-            matrices = args[0] * [eye(2)]
-            matrices[args[1] - 1] = args[2]
-            self.data = kron(matrices)
+            if matrix is None:
+
+                matrices = operations[0] * [eye(2)]
+                matrices[operations[1] - 1] = operations[2]
+                self.data = kron(matrices)
+
+            else:
+                raise ValueError("invalid input")
 
         else:
             raise ValueError("invalid input")
