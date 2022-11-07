@@ -1,6 +1,6 @@
 import numpy as np
 
-from .methods import eye, is_square, kron
+from .methods import eye, is_square, kron,sigmax,sigmay,sigmaz
 
 class HOp:
     """
@@ -33,20 +33,74 @@ class HOp:
 
     """
 
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         """
         Construct matrix representing the quantum operator.
         """
 
-        if not args:
+        if not args and not kwargs:
             raise TypeError("input cannot be empty")
 
-        if len(args) == 1 and is_square(args[0]):
+        elif len(args) == 1 and isinstance(args[0],int) and kwargs:
+            matricesholder = args[0] * [np.zeros(2,dtype=complex)+eye(2)]
+            Hmatrix = np.zeros(2**args[0],dtype=complex)
+
+            if 'precession_X' in kwargs:
+                for i in range(args[0]):
+                    matrices = np.copy(matricesholder)
+                    matrices[i] = sigmax()
+                    Hmatrix = Hmatrix + kwargs['precession_X'][i]*kron(matrices)
+
+            if 'precession_Y' in kwargs:
+                for i in range(args[0]):
+                    matrices = np.copy(matricesholder)
+                    matrices[i] = sigmay()
+                    Hmatrix = Hmatrix + kwargs['precession_Y'][i]*kron(matrices)
+
+            if 'precession_Z' in kwargs:
+                for i in range(args[0]):
+                    matrices = np.copy(matricesholder)
+                    matrices[i] = sigmaz()
+                    Hmatrix = Hmatrix + kwargs['precession_Z'][i]*kron(matrices)
+
+            if 'coupling_matrix_XX' in kwargs:
+                
+                for j in range(args[0]-1):
+                    k = j+1
+                    for k in range(j+1,args[0]):
+                        matrices = np.copy(matricesholder)
+                        matrices[j] = sigmax()
+                        matrices[k] = sigmax()
+                        Hmatrix = Hmatrix + kwargs['coupling_matrix_XX'][j,k]*kron(matrices)
+
+            if 'coupling_matrix_YY' in kwargs:
+                
+                for j in range(args[0]-1):
+                    k = j+1
+                    for k in range(j+1,args[0]):
+                        matrices = np.copy(matricesholder)
+                        matrices[j] = sigmay()
+                        matrices[k] = sigmay()
+                        Hmatrix = Hmatrix + kwargs['coupling_matrix_YY'][j,k]*kron(matrices)
+            
+            if 'coupling_matrix_ZZ' in kwargs:
+                
+                for j in range(args[0]-1):
+                    k = j+1
+                    for k in range(j+1,args[0]):
+                        matrices = np.copy(matricesholder)
+                        matrices[j] = sigmaz()
+                        matrices[k] = sigmaz()
+                        Hmatrix = Hmatrix + kwargs['coupling_matrix_ZZ'][j,k]*kron(matrices)
+            
+            self.data = Hmatrix
+
+        elif len(args) == 1 and is_square(args[0]) and not kwargs:
             # single ndarray
 
             self.data = args[0]
 
-        elif isinstance(args[1], tuple):
+        elif len(args) > 1 and isinstance(args[1], tuple) and not kwargs:
             # list of tuples (with pos and ndarray)
 
             matrices = args[0] * [eye(2)]
@@ -56,7 +110,7 @@ class HOp:
 
             self.data = kron(matrices)
             
-        elif args[0] >= args[1] and is_square(args[2]):
+        elif len(args) > 1 and args[0] >= args[1] and is_square(args[2]) and not kwargs:
             # multi-spin system with one spin specified
 
             matrices = args[0] * [eye(2)]
