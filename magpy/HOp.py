@@ -64,14 +64,19 @@ class HOp:
                     Hmatrix = Hmatrix + kwargs['precession_Z'][i]*kron(matrices)
 
             if 'coupling_matrix_XX' in kwargs:
-                
-                for j in range(args[0]-1):
-                    k = j+1
-                    for k in range(j+1,args[0]):
-                        matrices = np.copy(matricesholder)
-                        matrices[j] = sigmax()
-                        matrices[k] = sigmax()
-                        Hmatrix = Hmatrix + kwargs['coupling_matrix_XX'][j,k]*kron(matrices)
+                if (
+                    (kwargs['coupling_matrix_XX'].transpose() == kwargs['coupling_matrix_XX']).all() and
+                    not np.any(kwargs['coupling_matrix_XX'].diagonal())
+                ):
+                    for j in range(args[0]-1):
+                        k = j+1
+                        for k in range(j+1,args[0]):
+                            matrices = np.copy(matricesholder)
+                            matrices[j] = sigmax()
+                            matrices[k] = sigmax()
+                            Hmatrix = Hmatrix + kwargs['coupling_matrix_XX'][j,k]*kron(matrices)
+                else:
+                    raise ValueError("invalid XX couping matrix")
 
             if 'coupling_matrix_YY' in kwargs:
                 
