@@ -79,24 +79,34 @@ class HOp:
                     raise ValueError("invalid XX couping matrix")
 
             if 'coupling_matrix_YY' in kwargs:
-                
-                for j in range(args[0]-1):
-                    k = j+1
-                    for k in range(j+1,args[0]):
-                        matrices = np.copy(matricesholder)
-                        matrices[j] = sigmay()
-                        matrices[k] = sigmay()
-                        Hmatrix = Hmatrix + kwargs['coupling_matrix_YY'][j,k]*kron(matrices)
+                if (
+                    (kwargs['coupling_matrix_YY'].transpose() == kwargs['coupling_matrix_YY']).all() and
+                    not np.any(kwargs['coupling_matrix_YY'].diagonal())
+                ):
+                    for j in range(args[0]-1):
+                        k = j+1
+                        for k in range(j+1,args[0]):
+                            matrices = np.copy(matricesholder)
+                            matrices[j] = sigmay()
+                            matrices[k] = sigmay()
+                            Hmatrix = Hmatrix + kwargs['coupling_matrix_YY'][j,k]*kron(matrices)
+                else:
+                    raise ValueError("invalid YY couping matrix")
             
             if 'coupling_matrix_ZZ' in kwargs:
-                
-                for j in range(args[0]-1):
-                    k = j+1
-                    for k in range(j+1,args[0]):
-                        matrices = np.copy(matricesholder)
-                        matrices[j] = sigmaz()
-                        matrices[k] = sigmaz()
-                        Hmatrix = Hmatrix + kwargs['coupling_matrix_ZZ'][j,k]*kron(matrices)
+                if (
+                    (kwargs['coupling_matrix_ZZ'].transpose() == kwargs['coupling_matrix_ZZ']).all() and
+                    not np.any(kwargs['coupling_matrix_ZZ'].diagonal())
+                ):
+                    for j in range(args[0]-1):
+                        k = j+1
+                        for k in range(j+1,args[0]):
+                            matrices = np.copy(matricesholder)
+                            matrices[j] = sigmaz()
+                            matrices[k] = sigmaz()
+                            Hmatrix = Hmatrix + kwargs['coupling_matrix_ZZ'][j,k]*kron(matrices)
+                else:
+                    raise ValueError("invalid ZZ couping matrix")
             
             self.data = Hmatrix
 
