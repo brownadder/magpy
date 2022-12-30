@@ -64,22 +64,15 @@ def unvec(vec, c=None):
         if (len(vec) == 1):
             return vec
         else:
-            print("Error: odd number of elements in vector. \
-                  Cannot form matrix.")
-            return None
+            raise ValueError("odd number of elements in vector. Cannot form matrix.")
     elif c is None:
         if (np.sqrt(len(vec)).is_integer()):
             # matrix is square
             c = int(np.sqrt(len(vec)))
         else:
-            print("Error: vector cannot form a square matrix. \
-                  Please provide a column length, c.")
-            return None
+            raise ValueError("vector cannot form a square matrix. Provide a column length c.")
     elif (not (len(vec) / c).is_integer()):
-        # c does not divide length of vec
-        print("Error: value of c is invalid. \
-              Cannot split vector evenly into columns of length c")
-        return None
+        raise ValueError("cannot split vector evenly into columns of length " + str(c))
 
     # number of rows
     n = int(len(vec) / c)
@@ -111,6 +104,11 @@ def liouvillian(H):
         Square matrix with dimension n^2.
 
     """
+    if not isinstance(H, np.ndarray):
+        raise TypeError("cannot calculate Liouvillian of given type")
+    if not is_square(H):
+        raise ValueError("Hamiltonian must be square")
+
     n = H.shape[0]
 
     return -1j * (np.kron(eye(n), H) - np.kron(H.T, eye(n)))
