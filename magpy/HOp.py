@@ -66,10 +66,16 @@ class HOp:
                 raise ValueError("spin number must be positive")
 
             for arg in args[1:]:
-                if not isinstance(arg[1], np.ndarray):
-                    raise TypeError("matrix must be ndarray")
+                if list(map(type, arg)) != [int, np.ndarray]:
+                    raise TypeError("each tuple must be (int, ndarray)")
+                if not is_square(arg[1]):
+                    raise ValueError("all arrays must be square")
                 if arg[0] > args[0] or arg[0] <= 0:
                     raise ValueError("all indices must be <= spin number and all must be positive")
+
+            indices = [arg[0] for arg in args[1:]]
+            if len(set(indices)) != len(indices):
+                raise ValueError("all indices must be unique")
 
             matrices = args[0] * [eye(2)]
             for spin in args[1:]:
