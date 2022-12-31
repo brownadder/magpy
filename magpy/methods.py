@@ -225,18 +225,23 @@ def frobenius(a, b):
 
     Examples
     --------
-    >>> mp.Frobenius(mp.eye(2), np.ones((2,2)))
+    >>> mp.frobenius(mp.eye(2), np.ones((2,2)))
     (2+0j)
     >>> a = [mp.eye(2), np.ones((2,2))]
-    >>> mp.Frobenius(a, np.ones((2,2)))
+    >>> mp.frobenius(a, np.ones((2,2)))
     array([2.+0.j, 4.+0.j])
 
     """
-    a = np.asarray(a, dtype=object)
+
+    if not isinstance(a, (list, np.ndarray)): 
+        raise TypeError("a must be list or ndarray")
+    if not isinstance(b, np.ndarray):
+        raise TypeError("b must be ndarray")
+
     b = np.asarray(b, dtype=complex)
 
     try:
-        # a is an array
+        # a is a list
         t = []
         for x in a:
             t.append(np.trace(x.conj().T @ b))
