@@ -39,32 +39,51 @@ class HOp:
         """
 
         if not args:
-            raise TypeError("input cannot be empty")
+            raise TypeError("args cannot be empty")
 
-        if len(args) == 1 and is_square(args[0]):
-            # single ndarray
-
+        if len(args) == 1 and isinstance(args[0], np.ndarray):
+            # single array
+            if not is_square(args[0]):
+                raise ValueError("array must be square")
             self.data = args[0]
 
-        elif isinstance(args[1], tuple):
-            # list of tuples (with pos and ndarray)
-
-            matrices = args[0] * [eye(2)]
-
-            for spin in args[1:]:
-                matrices[spin[0] - 1] = spin[1]
-
-            self.data = kron(matrices)
-            
-        elif args[0] >= args[1] and is_square(args[2]):
+        elif list(map(type, args)) == [int, int, np.ndarray]:
             # multi-spin system with one spin specified
-
+            if not is_square(args[2]):
+                raise ValueError("array must be square")
+            if args[0] <= 0 or args[1] <= 0 or args[0] < args[1]:
+                raise ValueError("index must be <= spin number and both must be positive")
+            
             matrices = args[0] * [eye(2)]
             matrices[args[1] - 1] = args[2]
             self.data = kron(matrices)
 
+        elif list(map(type, args)) == [int] + [tuple for _ in args[1:]]:
+            # spin number + list of tuples (index and array)
+            if not args[1:]:
+                raise ValueError("at least one tuple of index and array must be specified")
+            if args[0] <= 0:
+                raise ValueError("spin number must be positive")
+
+            for arg in args[1:]:
+                if list(map(type, arg)) != [int, np.ndarray]:
+                    raise TypeError("each tuple must be (int, ndarray)")
+                if not is_square(arg[1]):
+                    raise ValueError("all arrays must be square")
+                if arg[0] > args[0] or arg[0] <= 0:
+                    raise ValueError("all indices must be <= spin number and all must be positive")
+
+            indices = [arg[0] for arg in args[1:]]
+            if len(set(indices)) != len(indices):
+                raise ValueError("all indices must be unique")
+
+            matrices = args[0] * [eye(2)]
+            for spin in args[1:]:
+                matrices[spin[0] - 1] = spin[1]
+            self.data = kron(matrices)
+            
         else:
-            raise ValueError("invalid input")
+            raise ValueError("invalid args specified")
 
     def __call__(self):
         return self.data
