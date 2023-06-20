@@ -2,16 +2,16 @@ class Sigma():
     """
     An n-spin quantum operator formed of Pauli matrices.
 
-    The representation of the operator is reduced to a dictionary of positions
-    in a Kronecker product and a combination of Pauli matrices at each.
+    The representation of the operator is reduced to a dictionary of site in a 
+    Kronecker product and a combination of Pauli matrices at each.
 
-    Any unspecified positions in the product are inferred to be identity, and 
-    the actual number of spins on which the operator acts is not stored.
+    Any unspecified sites in the product are inferred to be identity, and the 
+    actual number of spins on which the operator acts is not stored.
 
     Attributes
     ----------
     spins : dict
-        Position in product and their respective matrices.
+        Sites in product and their respective matrices.
     
     Examples
     --------
@@ -28,29 +28,99 @@ class Sigma():
 
     """  
 
-    def __init__(self, x=None, y=None, z=None):
+    def __init__(self, x={}, y={}, z={}):
         """
         Construct an operator with the given positions and matrices.
 
         Parameters
         ----------
         x : int or set of int, optional
-            Position(s) of the Pauli x matrix, by default None
+            Site(s) of the Pauli x matrix, by default {}.
         y : int or set of int, optional
-            Position(s) of the Pauli y matrix, by default None
+            Site(s) of the Pauli y matrix, by default {}.
         z : int or set of int, optional
-            Position(s) of the Pauli z matrix, by default None
+            Site(s) of the Pauli z matrix, by default {}.
 
         """
         
+        self.scale = 1
         self.spins = {}
-        for spin, label in zip([x, y, z], ["x", "y", "z"]):
+        for spin, label in zip([x, y, z], ['x', 'y', 'z']):
             try:
                 self.spins |= dict([(n, label) for n in spin])
             except:
                 if spin is not None:
                     self.spins[spin] = label
     
+    @staticmethod
+    def X(sites=1):
+        """
+        Return a quantum operator formed of Pauli X matrices.
+
+        Parameters
+        ----------
+        sites : int or set of int, optional
+            Site(s) of Pauli X matrices, by default 1.
+
+        Returns
+        -------
+        Sigma
+            A quantum operator.
+        """
+        return Sigma(x = sites)
+    
+    @staticmethod
+    def Y(sites=1):
+        """
+        Return a quantum operator formed of Pauli Y matrices.
+
+        Parameters
+        ----------
+        sites : int or set of int, optional
+            Site(s) of Pauli Y matrices, by default 1.
+
+        Returns
+        -------
+        Sigma
+            A quantum operator.
+        """
+        return Sigma(y = sites)
+    
+    @staticmethod
+    def Z(sites=1):
+        """
+        Return a quantum operator formed of Pauli Z matrices.
+
+        Parameters
+        ----------
+        sites : int or set of int, optional
+            Site(s) of Pauli Z matrices, by default 1.
+
+        Returns
+        -------
+        Sigma
+            A quantum operator.
+        """
+        return Sigma(z = sites)
+
+    def __str__(self):
+        """
+        Return a pretty presentation of the quantum operator.
+        """
+        return ' '.join([str(n) + ':' + s for (n, s) in self.spins.items()])
+    
+    def __repr__(self):
+        """
+        Return the internal representation of the quantum operator's data.
+        """
+        return str(self.spins)
+
+    def __eq__(self, other):
+        """
+        Return true if the operators have the same spins in the same sites.
+        """
+        return self.spins == other.spins
+
     def __mul__(self, other):
         """
         Compose two quantum operators.
@@ -63,7 +133,7 @@ class Sigma():
         Returns
         -------
         Sigma
-            The resultant quantum operator from the composition.
+            Resultant quantum operator.
 
         Examples
         --------
