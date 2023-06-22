@@ -2,7 +2,7 @@ class Sigma():
     """
     An n-spin quantum operator formed of Pauli matrices.
 
-    The representation of the operator is reduced to a dictionary of site in a 
+    The representation of the operator is stored as a dictionary of sites in a 
     Kronecker product and a combination of Pauli matrices at each.
 
     Any unspecified sites in the product are inferred to be identity, and the 
@@ -62,11 +62,6 @@ class Sigma():
         ----------
         sites : int or set of int, optional
             Site(s) of Pauli X matrices, by default 1.
-
-        Returns
-        -------
-        Sigma
-            A quantum operator.
         """
         return Sigma(x = sites)
     
@@ -80,11 +75,6 @@ class Sigma():
         ----------
         sites : int or set of int, optional
             Site(s) of Pauli Y matrices, by default 1.
-
-        Returns
-        -------
-        Sigma
-            A quantum operator.
         """
         return Sigma(y = sites)
     
@@ -98,11 +88,6 @@ class Sigma():
         ----------
         sites : int or set of int, optional
             Site(s) of Pauli Z matrices, by default 1.
-
-        Returns
-        -------
-        Sigma
-            A quantum operator.
         """
         return Sigma(z = sites)
 
@@ -132,11 +117,6 @@ class Sigma():
     def __neg__(self):
         """
         Negate quantum operator.
-
-        Returns
-        -------
-        Sigma
-            Resultant quantum operator.
         """
 
         self.scale *= -1
@@ -145,25 +125,15 @@ class Sigma():
 
     def __mul__(self, other):
         """
-        Compose two quantum operators.
-
-        Parameters
-        ----------
-        other : Sigma
-            A quantum operator.
-
-        Returns
-        -------
-        Sigma
-            Resultant quantum operator.
+        Compose quantum operators.
 
         Examples
         --------
-        >>> 3 * Sigma(x=1) * Sigma(y=2)
-        3: {1: 'x', 2: 'y'}
+        >>> 3j * Sigma(x=1) * Sigma(y=2)
+        3j: {1: 'x', 2: 'y'}
 
-        >>> Sigma(x=1) * Sigma(z=1) * 4j
-        4j: {1 : 'xz'}
+        >>> Sigma(x=1) * Sigma(z=1)
+        1: {1 : 'xz'}
         """
 
         s = Sigma()
@@ -188,50 +158,30 @@ class Sigma():
 
     def __rmul__(self, other):
         """
-        Compose two quantum operators.
-
-        Parameters
-        ----------
-        other : Sigma
-            A quantum operator.
-
-        Returns
-        -------
-        Sigma
-            Resultant quantum operator.
+        Compose quantum operators.
 
         Examples
         --------
-        >>> 3 * Sigma(x=1) * Sigma(y=2)
-        3: {1: 'x', 2: 'y'}
+        >>> 3j * Sigma(x=1) * Sigma(y=2)
+        3j: {1: 'x', 2: 'y'}
 
-        >>> Sigma(x=1) * Sigma(z=1) * 4j
-        4j: {1 : 'xz'}
+        >>> Sigma(x=1) * Sigma(z=1)
+        1: {1 : 'xz'}
         """
         return self.__mul__(other)
     
     
     def __imul__(self, other):
         """
-        Compose two quantum operators.
-
-        Parameters
-        ----------
-        other : Sigma
-            A quantum operator.
-
-        Returns
-        -------
-        Sigma
-            Resultant quantum operator.
+        Compose quantum operators.
 
         Examples
         --------
-        >>> 3 * Sigma(x=1) * Sigma(y=2)
-        3: {1: 'x', 2: 'y'}
+        >>> 3j * Sigma(x=1) * Sigma(y=2)
+        3j: {1: 'x', 2: 'y'}
 
-        >>> Sigma(x=1) * Sigma(z=1) * 4j
-        4j: {1 : 'xz'}
+        >>> Sigma(x=1) * Sigma(z=1)
+        1: {1 : 'xz'}
         """
 
         return self.__mul__(other)
