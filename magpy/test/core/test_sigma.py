@@ -34,6 +34,7 @@ def test_xyz_instantiation(instance, expected_spins):
         (Sigma(x=1), Sigma(y=2), {1 : 'x', 2 : 'y'}),
         (Sigma(z=1), Sigma(x=1), {1 : 'zx'}),
         (Sigma(x=1), Sigma(z=1), {1 : 'xz'}),
+        (Sigma(scale=0), Sigma(x=1), {})
     ])
 def test_multiplication(s1, s2, expected_spins):
     assert (s1 * s2).spins == expected_spins
@@ -43,7 +44,8 @@ def test_multiplication(s1, s2, expected_spins):
     [
         (1, Sigma(), 1),
         (2, Sigma(x=1), 2),
-        (3j + 4, Sigma(x=2), 3j + 4)
+        (3j + 4, Sigma(x=2), 3j + 4),
+        (0, Sigma(x=1), 0)
     ])
 def test_scalar_multiplication(scale, s1, expected_scale):
     assert (scale * s1).scale == expected_scale
@@ -51,9 +53,3 @@ def test_scalar_multiplication(scale, s1, expected_scale):
 
 def test_negation():
     assert (-Sigma()).scale == -1
-
-
-def test_imul():
-    s1 = Sigma(y=1)
-    s1 *= Sigma(x=1)
-    assert s1.spins == {1 : 'yx'}

@@ -29,7 +29,7 @@ class Sigma():
         The internal representation of this operator is {1 : 'x', 3 : 'x'}.
     """  
 
-    def __init__(self, x={}, y={}, z={}):
+    def __init__(self, x={}, y={}, z={}, scale=1):
         """
         Construct an operator with the given positions and matrices.
 
@@ -43,8 +43,12 @@ class Sigma():
             Site(s) of the Pauli z matrix, by default {}.
         """
         
-        self.scale = 1
+        self.scale = scale
         self.spins = {}
+
+        if scale == 0:
+            return
+
         for spin, label in zip([x, y, z], ['x', 'y', 'z']):
             try:
                 self.spins |= dict([(n, label) for n in spin])
@@ -96,7 +100,9 @@ class Sigma():
         """
         Return a pretty presentation of the quantum operator.
         """
-        return str(self.scale) + ': ' \
+
+        sep = ': ' if self.spins else ''
+        return str(self.scale) + sep \
             + ' '.join([str(n) + ':' + s for (n, s) in self.spins.items()])
     
 
@@ -137,9 +143,16 @@ class Sigma():
         """
 
         s = Sigma()
+        s.scale = 0
 
+        if self.scale == 0:
+            return s
+        
         try: 
             # other is Sigma.
+            if other.scale == 0:
+                return s
+            
             right = other.spins.keys()
             left = self.spins.keys()
             overlap = [n for n in left if n in right]
@@ -147,9 +160,11 @@ class Sigma():
             s.scale = self.scale * other.scale
             s.spins = self.spins | other.spins \
                 | dict([(n, self.spins[n] + other.spins[n]) for n in overlap])
-
         except: 
             # other is int.
+            if other == 0:
+                return s
+            
             s.scale = self.scale * other
             s.spins = self.spins
         
