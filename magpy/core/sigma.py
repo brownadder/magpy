@@ -169,19 +169,3 @@ class Sigma():
         1: {1 : 'xz'}
         """
         return self.__mul__(other)
-    
-    
-    def __imul__(self, other):
-        """
-        Compose quantum operators.
-
-        Examples
-        --------
-        >>> 3j * Sigma(x=1) * Sigma(y=2)
-        3j: {1: 'x', 2: 'y'}
-
-        >>> Sigma(x=1) * Sigma(z=1)
-        1: {1 : 'xz'}
-        """
-
-        return self.__mul__(other)
