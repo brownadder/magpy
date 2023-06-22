@@ -12,6 +12,8 @@ class Sigma():
     ----------
     spins : dict
         Sites in product and their respective matrices.
+    scale : complex
+        Scalar coefficient of operator, by default 1.
     
     Examples
     --------
@@ -25,7 +27,6 @@ class Sigma():
         >>> Sigma(x = {1, 3})
 
         The internal representation of this operator is {1 : 'x', 3 : 'x'}.
-
     """  
 
     def __init__(self, x={}, y={}, z={}):
@@ -40,7 +41,6 @@ class Sigma():
             Site(s) of the Pauli y matrix, by default {}.
         z : int or set of int, optional
             Site(s) of the Pauli z matrix, by default {}.
-
         """
         
         self.scale = 1
@@ -52,6 +52,7 @@ class Sigma():
                 if spin is not None:
                     self.spins[spin] = label
     
+
     @staticmethod
     def X(sites=1):
         """
@@ -69,6 +70,7 @@ class Sigma():
         """
         return Sigma(x = sites)
     
+
     @staticmethod
     def Y(sites=1):
         """
@@ -86,6 +88,7 @@ class Sigma():
         """
         return Sigma(y = sites)
     
+
     @staticmethod
     def Z(sites=1):
         """
@@ -103,23 +106,42 @@ class Sigma():
         """
         return Sigma(z = sites)
 
+
     def __str__(self):
         """
         Return a pretty presentation of the quantum operator.
         """
-        return ' '.join([str(n) + ':' + s for (n, s) in self.spins.items()])
+        return str(self.scale) + ': ' \
+            + ' '.join([str(n) + ':' + s for (n, s) in self.spins.items()])
     
+
     def __repr__(self):
         """
         Return the internal representation of the quantum operator's data.
         """
-        return str(self.spins)
+        return str(self.scale) + ": " + str(self.spins)
+
 
     def __eq__(self, other):
         """
         Return true if the operators have the same spins in the same sites.
         """
         return self.spins == other.spins
+
+
+    def __neg__(self):
+        """
+        Negate quantum operator.
+
+        Returns
+        -------
+        Sigma
+            Resultant quantum operator.
+        """
+
+        self.scale *= -1
+        return self
+    
 
     def __mul__(self, other):
         """
@@ -137,20 +159,79 @@ class Sigma():
 
         Examples
         --------
+        >>> 3 * Sigma(x=1) * Sigma(y=2)
+        3: {1: 'x', 2: 'y'}
 
-        >>> (Sigma(x=1) * Sigma(y=2)).spins
-        {1: 'x', 2: 'y'}
-
-        >>> (Sigma(x=1) * Sigma(z=1)).spins
-        {1 : 'xz'}
-
+        >>> Sigma(x=1) * Sigma(z=1) * 4j
+        4j: {1 : 'xz'}
         """
-        left = self.spins.keys()
-        right = other.spins.keys()
-        overlap = [n for n in left if n in right]
 
         s = Sigma()
-        s.spins = self.spins | other.spins \
-            | dict([(n, self.spins[n] + other.spins[n]) for n in overlap])
 
+        try: 
+            # other is Sigma.
+            right = other.spins.keys()
+            left = self.spins.keys()
+            overlap = [n for n in left if n in right]
+
+            s.scale = self.scale * other.scale
+            s.spins = self.spins | other.spins \
+                | dict([(n, self.spins[n] + other.spins[n]) for n in overlap])
+
+        except: 
+            # other is int.
+            s.scale = self.scale * other
+            s.spins = self.spins
+        
         return s
+    
+
+    def __rmul__(self, other):
+        """
+        Compose two quantum operators.
+
+        Parameters
+        ----------
+        other : Sigma
+            A quantum operator.
+
+        Returns
+        -------
+        Sigma
+            Resultant quantum operator.
+
+        Examples
+        --------
+        >>> 3 * Sigma(x=1) * Sigma(y=2)
+        3: {1: 'x', 2: 'y'}
+
+        >>> Sigma(x=1) * Sigma(z=1) * 4j
+        4j: {1 : 'xz'}
+        """
+        return self.__mul__(other)
+    
+    
+    def __imul__(self, other):
+        """
+        Compose two quantum operators.
+
+        Parameters
+        ----------
+        other : Sigma
+            A quantum operator.
+
+        Returns
+        -------
+        Sigma
+            Resultant quantum operator.
+
+        Examples
+        --------
+        >>> 3 * Sigma(x=1) * Sigma(y=2)
+        3: {1: 'x', 2: 'y'}
+
+        >>> Sigma(x=1) * Sigma(z=1) * 4j
+        4j: {1 : 'xz'}
+        """
+
+        return self.__mul__(other)
