@@ -117,7 +117,7 @@ class Sigma():
         """
         Return true if the operators have the same spins in the same sites.
         """
-        return self.spins == other.spins
+        return self.spins == other.spins and self.scale == other.scale
 
 
     def __neg__(self):
