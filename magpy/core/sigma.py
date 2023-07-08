@@ -103,14 +103,14 @@ class Sigma():
 
         sep = ': ' if self.spins else ''
         return str(self.scale) + sep \
-            + ' '.join([str(n) + ':' + s for (n, s) in self.spins.items()])
+            + ' '.join([str(n) + ':' + s for (n, s) in sorted(self.spins.items())])
     
 
     def __repr__(self):
         """
         Return the internal representation of the quantum operator's data.
         """
-        return str(self.scale) + ": " + str(self.spins)
+        return str(self.scale) + ": " + str(dict(sorted(self.spins.items())))
 
 
     def __eq__(self, other):
