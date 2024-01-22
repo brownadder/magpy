@@ -127,7 +127,43 @@ class Sigma():
 
         self.scale *= -1
         return self
-    
+
+
+    @staticmethod
+    def __e_ijk(i, j, k):
+        """
+        Three-dimensional Levi-Civita symbol.
+        """
+        return (i - j)*(j - k)*(k - i) / 2
+
+
+    @staticmethod
+    def __pauli_mul(a, b):
+        """
+        Return product of two Pauli matrices (None if identity).
+
+        Parameters
+        ----------
+        a : str
+            'x', 'y', or 'z'
+        b : str
+            'x', 'y', or 'z'
+
+        Returns
+        -------
+        complex
+            Scalar coefficient of product.
+        str
+            'x', 'y', 'z', or None
+        """
+
+        if a == b:
+            # Identity.
+            return 1, None
+        
+        c = 'xyz'.replace(a, '').replace(b, '')
+        return Sigma.__e_ijk(ord(a), ord(b), ord(c)), c
+
 
     def __mul__(self, other):
         """
@@ -139,7 +175,7 @@ class Sigma():
         3j: {1: 'x', 2: 'y'}
 
         >>> Sigma(x=1) * Sigma(z=1)
-        1: {1 : 'xz'}
+        -1: {1 : 'y'}
         """
 
         s = Sigma()
@@ -153,13 +189,22 @@ class Sigma():
             if other.scale == 0:
                 return s
             
-            right = other.spins.keys()
-            left = self.spins.keys()
-            overlap = [n for n in left if n in right]
-
             s.scale = self.scale * other.scale
-            s.spins = self.spins | other.spins \
-                | dict([(n, self.spins[n] + other.spins[n]) for n in overlap])
+            overlap_spins = {}
+
+            for n in [n for n in self.spins.keys() if n in other.spins.keys()]:
+                # Scalar coefficient, spin.
+                p = Sigma.__pauli_mul(self.spins[n], other.spins[n])
+
+                if (p[1] is None):
+                    # Identity matrix, therefore remove.
+                    del self.spins[n]
+                    del other.spins[n]
+                else:
+                    overlap_spins[n] = p[1]
+                    s.scale *= p[0] * 1j
+
+            s.spins = self.spins | other.spins | overlap_spins
         except: 
             # other is int.
             if other == 0:
@@ -181,6 +226,6 @@ class Sigma():
         3j: {1: 'x', 2: 'y'}
 
         >>> Sigma(x=1) * Sigma(z=1)
-        1: {1 : 'xz'}
+        -1: {1 : 'y'}
         """
         return self.__mul__(other)
