@@ -1,19 +1,13 @@
 [project]
 name = "magpy"
-version = "1.0.0"
+version = "0.0.1"
 description = "Magnus based time-integration for spins and qubits under a magnetic field."
 readme = "README.md"
-requires-python = ">=3.7"
 license = { text = "MIT" }
 
 authors = [
     { name = "Danny Goodacre", email = "danny.goodacre@bath.edu" },
     { name = "Pranav Singh", email = "ps2106@bath.ac.uk" }
-]
-
-dependencies = [
-    "numpy>=1.16.5",
-    "scipy>=1.7"
 ]
 
 classifiers = [
@@ -26,10 +20,15 @@ keywords = [
     "quantum", "spin", "Magnus",
 ]
 
-[project.urls]
-homepage = "https://github.com/brownadder/magpy"
-repository = "https://github.com/brownadder/magpy"
-
 [build-system]
-requires = ["setuptools>=44.0.0"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+pythonpath = [
+    "."
+]
+
+[tool.flake8]
+max-line-length = 120
+per-file-ignores = "*/__init__.py: F401  test_*.py: E128"
