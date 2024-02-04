@@ -42,6 +42,9 @@ class PauliString:
         return self.qubits == other.qubits and self.scale == other.scale
 
     def __mul__(self, other):
+        if isinstance(other, mp.HamiltonianOperator):
+            return other * self
+
         s = PauliString(scale=0)
 
         try:
