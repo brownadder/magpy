@@ -43,7 +43,7 @@ class PauliString:
 
     def __mul__(self, other):
         if isinstance(other, mp.HamiltonianOperator):
-            return other * self
+            return -other * self
 
         s = PauliString(scale=0)
 

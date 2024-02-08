@@ -24,4 +24,4 @@ def test_negation():
 
 
 def test_pauli_string_multiplication():
-    assert (PS.X() * HO([np.sin, PS.Y()])).data[np.sin] == -1j*PS.Z()
+    assert (PS.X() * HO([np.sin, PS.Y()])).data[np.sin] == 1j*PS.Z()
