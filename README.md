@@ -1,4 +1,6 @@
-# MagPy
+<h1 align="center">
+    <img src="./branding/logo/banner.svg" width="350">
+</h1>
 
 Magnus based time-integration for qubits under a magnetic field.
 
