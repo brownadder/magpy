@@ -50,27 +50,35 @@ class HamiltonianOperator:
         return self.data == other.data
 
     def __mul__(self, other):
-        if isinstance(other, HamiltonianOperator):
-            raise NotImplementedError(
-                "HamiltonianOperator composition is not yet implemented")
-
         out = HamiltonianOperator()
-        out.data = deepcopy(self.data)
 
-        if isinstance(other, Number | mp.PauliString):
-            for coeff in out.data:
-                try:
-                    for i in range(len(out.data[coeff])):
-                        out.data[coeff][i] *= other
-                except TypeError:
-                    out.data[coeff] *= other
+        try:
+            self_data = HamiltonianOperator.__expand(self.data)
+            other_data = HamiltonianOperator.__expand(other.data)
 
-        else:
-            # other is FunctionProduct or other type of function.
-            for coeff in list(out.data):
-                out.data[mp.FunctionProduct(coeff, other)] = out.data.pop(coeff)
+            for p in self_data:
+                for q in other_data:
+                    out += mp.FunctionProduct() * p[0] * q[0] * p[1] * q[1]
 
-        return out
+            return out
+
+        except AttributeError:
+            out.data = deepcopy(self.data)
+
+            if isinstance(other, Number | mp.PauliString):
+                for coeff in out.data:
+                    try:
+                        for i in range(len(out.data[coeff])):
+                            out.data[coeff][i] *= other
+                    except TypeError:
+                        out.data[coeff] *= other
+
+            else:
+                # other is FunctionProduct or other type of function.
+                for coeff in list(out.data):
+                    out.data[mp.FunctionProduct(coeff, other)] = out.data.pop(coeff)
+
+            return out
 
     __rmul__ = __mul__
 
@@ -120,3 +128,15 @@ class HamiltonianOperator:
         # Collect all PauliStrings in all lists in arrs.
         for coeff in arrs:
             arrs[coeff] = mp.PauliString.collect(arrs[coeff])
+
+    @staticmethod
+    def __expand(data):
+        # Expand all functions and lists of qubits into pairs of functions with single qubits.
+        expanded_data = []
+        for pair in data.items():
+            try:
+                for qubit in pair[1]:
+                    expanded_data.append((pair[0], qubit))
+            except TypeError:
+                expanded_data.append(pair)
+        return expanded_data

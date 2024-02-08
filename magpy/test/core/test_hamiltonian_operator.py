@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from magpy import PauliString as PS, HamiltonianOperator as HO
+from magpy import PauliString as PS, HamiltonianOperator as HO, FunctionProduct as FP
 
 
 @pytest.mark.parametrize("pairs, expected_data",
@@ -25,3 +25,12 @@ def test_negation():
 
 def test_pauli_string_multiplication():
     assert (PS.X() * HO([np.sin, PS.Y()])).data[np.sin] == 1j*PS.Z()
+
+
+@pytest.mark.parametrize("A, B, expected_product",
+    [
+        (HO([np.sin, PS.X()]), HO([np.sin, PS.X()]), HO([FP(np.sin, np.sin), PS.Id()])),
+        (HO([np.sin, PS.X()]), HO([np.cos, PS.Y()]), HO([FP(np.sin, np.cos), 1j*PS.Z()]))
+    ])
+def test_multiplication(A, B, expected_product):
+    assert A * B == expected_product
