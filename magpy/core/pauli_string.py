@@ -87,11 +87,15 @@ class PauliString:
     __rmul__ = __mul__
 
     def __add__(self, other):
-        if self == other:
-            s = PauliString(scale=self.scale + other.scale)
-            s.qubits = self.qubits
-            return s
-        return mp.HamiltonianOperator([1, self], [1, other])
+        try:
+            if self == other:
+                s = PauliString(scale=self.scale + other.scale)
+                s.qubits = self.qubits
+                return s
+            return mp.HamiltonianOperator([1, self], [1, other])
+        except AttributeError:
+            # other is HamiltonianOperator
+            return other + self
 
     def __neg__(self):
         s = PauliString(scale=-self.scale)
