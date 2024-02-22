@@ -1,0 +1,4 @@
+-r base.txt
+Flake8-pyproject
+flake8
+pylint
