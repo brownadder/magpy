@@ -31,7 +31,7 @@ class PauliString:
         self.qubits = {}
         self.scale = scale
 
-        for q, label in zip([x, y, z], ["x", "y", "z"]):
+        for q, label in zip([x, y, z], ["X", "Y", "Z"]):
             try:
                 self.qubits |= {n: label for n in q}
             except TypeError:
@@ -103,7 +103,7 @@ class PauliString:
         return s
 
     def __repr__(self):
-        return str(self.scale) + "*" + str(dict(sorted(self.qubits.items()))).replace("'", "")
+        return str(self.scale) + "*" + "*".join(q[1] + str(q[0]) for q in sorted(self.qubits.items()))
 
     @staticmethod
     def X(*args):
@@ -174,5 +174,5 @@ class PauliString:
         # Composition of two Pauli qubits.
         if a == b:
             return None
-        c = "xyz".replace(a, "").replace(b, "")
+        c = "XYZ".replace(a, "").replace(b, "")
         return PauliString.__e_ijk(ord(a), ord(b), ord(c)), c
