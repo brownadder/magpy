@@ -1,4 +1,5 @@
 import magpy as mp
+import torch
 from numbers import Number
 
 
@@ -16,6 +17,12 @@ class PauliString:
     scale : Number
         Scalar coefficient
     """
+
+    matrices = {
+        'X': torch.tensor([[0, 1], [1, 0]]),
+        'Y': torch.tensor([[0, -1j], [1j, 0]]),
+        'Z': torch.tensor([[1, 0], [0, -1]])
+    }
 
     def __init__(self, x=None, y=None, z=None, scale=1):
         """A multi-qubit Pauli operator.
@@ -104,6 +111,16 @@ class PauliString:
 
     def __repr__(self):
         return str(self.scale) + "*" + "*".join(q[1] + str(q[0]) for q in sorted(self.qubits.items()))
+
+    def __call__(self, n=None):
+        if n is None:
+            n = max(self.qubits)
+
+        qubits = n * [torch.eye(2)]
+        for index, qubit in self.qubits.items():
+            qubits[index - 1] = PauliString.matrices[qubit]
+
+        return self.scale * mp.kron(*qubits)
 
     @staticmethod
     def X(*args):
