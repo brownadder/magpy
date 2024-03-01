@@ -155,12 +155,12 @@ class PauliString:
                     counts[ps] = scale
         except TypeError:  # arr is single PauliString.
             return arr
-        else:
-            for c in counts:
-                a = PauliString()
-                a.qubits = dict(c)
-                a.scale = counts[c]
-                out.append(a)
+
+        for ps, c in counts.items():
+            a = PauliString()
+            a.qubits = dict(ps)
+            a.scale = c
+            out.append(a)
 
         return out[0] if len(out) == 1 else out
 
