@@ -120,7 +120,7 @@ class PauliString:
         for index, qubit in self.qubits.items():
             qubits[index - 1] = PauliString.matrices[qubit]
 
-        return self.scale * mp.kron(*qubits)
+        return self.scale * mp.kron(*qubits).type(torch.complex128)
 
     @staticmethod
     def X(*args):
