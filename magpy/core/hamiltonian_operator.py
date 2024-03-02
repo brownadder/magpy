@@ -1,4 +1,6 @@
 import magpy as mp
+import torch
+from itertools import chain
 from copy import deepcopy
 from numbers import Number
 
@@ -122,6 +124,34 @@ class HamiltonianOperator:
 
     def __repr__(self):
         return str(self.data)
+
+    def __call__(self, t=None, n=None):
+        if n is None:
+            pauli_strings = chain.from_iterable(p if isinstance(p, list) else [p] for p in self.data.values())
+            n = max(max(p.qubits) for p in pauli_strings)
+
+        if self.is_constant():
+            return sum(p(n).type(torch.complex128) for p in self.data[1])
+
+        if t is None:
+            raise ValueError(
+                "Hamiltonian is not constant. A value of t is required.")
+
+        out = 0
+        for coeff, ps in self.data.items():
+            try:
+                out += coeff(t) * ps(n).type(torch.complex128)
+            except TypeError:
+                for p in ps:
+                    out += coeff(t) * p(n).type(torch.complex128)
+
+        return out
+
+    def is_constant(self):
+        for coeff in self.data:
+            if not isinstance(coeff, Number):
+                return False
+        return True
 
     @staticmethod
     def __simplify(arrs):
