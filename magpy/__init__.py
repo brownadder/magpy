@@ -1,1 +1,1 @@
-from .core import PauliString, FunctionProduct, HamiltonianOperator
+from .core import PauliString, FunctionProduct, HamiltonianOperator, kron
