@@ -26,7 +26,6 @@ class System(ABC):
 
         if H.is_constant():
             return _TimeIndependentQuantumSystem(H, rho0, tlist)
-        return _TimeDependentQuantumSystem(H, rho0, tlist)
 
     @abstractmethod
     def evolve(self):
@@ -49,8 +48,3 @@ class _TimeIndependentQuantumSystem(System):
 
         for i in range(len(self.tlist) - 1):
             self.states.append(lhs @ self.states[i] @ rhs)
-
-    def show_states(self):
-        for state in self.states:
-            print(state)
-            print("---")
