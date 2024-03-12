@@ -109,6 +109,9 @@ class PauliString:
         s.qubits = self.qubits
         return s
 
+    def __sub__(self, other):
+        return self + -1*other
+
     def __repr__(self):
         return str(self.scale) + "*" + "*".join(q[1] + str(q[0]) for q in sorted(self.qubits.items()))
 
