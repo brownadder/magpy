@@ -1,6 +1,9 @@
 import torch
 import scipy.integrate
 from abc import ABC, abstractmethod
+import itertools
+from magpy.core import commutator
+from numbers import Number
 
 
 class System(ABC):
@@ -63,18 +66,51 @@ class _TimeDependentQuantumSystem(System):
     def evolve(self):
         self.states = [self.rho0()]
 
-        # Draft version of 1-term Magnus.
-        temp = []
+        unpacked = []
         for f, h in self.H.data.items():
             if isinstance(h, list):
                 for e in h:
-                    temp.append((f, e))
+                    unpacked.append((f, e))
             else:
-                temp.append((f, h))
+                unpacked.append((f, h))
 
         for i in range(len(self.tlist) - 1):
-            omega = -1j*sum(scipy.integrate.quad(f, self.tlist[i], self.tlist[i+1])[0] * h() for f, h in temp)
-            u = torch.matrix_exp(omega)
-            ut = torch.conj(torch.transpose(u, 0, 1))
+            omega1 = self.__first_term(self.tlist[i], self.tlist[i+1], unpacked)
+            omega2 = 0.5 * self.__second_term(self.tlist[i], self.tlist[i+1])
+            omega = omega1 + omega2
 
+            u = torch.matrix_exp(-1j * omega)
+            ut = torch.conj(torch.transpose(u, 0, 1))
             self.states.append(u @ self.states[i] @ ut)
+
+    def __first_term(self, t0, tf, unpacked):
+        return sum(
+            (f*(tf - t0) if isinstance(f, Number)
+                else scipy.integrate.quad(f, t0, tf)[0]) * h() for f, h in unpacked)
+
+    def __second_term(self, a, b):
+        ps = self.__unpack_data()
+        pairs = itertools.product(ps, repeat=2)
+
+        out = 0
+        for pair in pairs:
+            if pair[0][1] == pair[1][1]:
+                continue
+            out += self.__second_term_integral(pair[0][0], pair[1][0], a, b) * commutator(pair[0][1], pair[1][1])()
+
+        return out
+
+    def __second_term_integral(self, f, g, t0, tf):
+        if isinstance(f, Number) and isinstance(g, Number):
+            return scipy.integrate.dblquad(lambda y, x: f * g, t0, tf, t0, lambda x: x)[0]
+
+        if isinstance(f, Number):
+            return scipy.integrate.dblquad(lambda y, x: f * g(y), t0, tf, t0, lambda x: x)[0]
+
+        if isinstance(g, Number):
+            return scipy.integrate.dblquad(lambda y, x: f(x) * g, t0, tf, t0, lambda x: x)[0]
+
+        return scipy.integrate.dblquad(lambda y, x: f(x) * g(y), t0, tf, t0, lambda x: x)[0]
+
+    def __unpack_data(self):
+        return [(k, v) for k, items in self.H.data.items() for v in (items if isinstance(items, list) else [items])]
