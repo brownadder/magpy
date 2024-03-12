@@ -122,6 +122,10 @@ class HamiltonianOperator:
         out.data = deepcopy(self.data)
         return -1 * out
 
+    def __sub__(self, other):
+        out = self + -other
+        return out
+
     def __repr__(self):
         return str(self.data)
 
@@ -131,7 +135,10 @@ class HamiltonianOperator:
             n = max(max(p.qubits) for p in pauli_strings)
 
         if self.is_constant():
-            return sum(p(n).type(torch.complex128) for p in self.data[1])
+            try:
+                return sum(p(n).type(torch.complex128) for p in self.data[1])
+            except TypeError:
+                return self.data[1](n).type(torch.complex128)
 
         if t is None:
             raise ValueError(
@@ -142,8 +149,11 @@ class HamiltonianOperator:
             try:
                 out += coeff(t) * ps(n).type(torch.complex128)
             except TypeError:
-                for p in ps:
-                    out += coeff(t) * p(n).type(torch.complex128)
+                if isinstance(coeff, Number):
+                    out += coeff * ps(n).type(torch.complex128)
+                else:
+                    for p in ps:
+                        out += coeff(t) * p(n).type(torch.complex128)
 
         return out
 
