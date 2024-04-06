@@ -6,14 +6,10 @@ def kron(*args):  # TODO: Replace this with expsolve.kron
     return functools.reduce(torch.kron, args)
 
 
-def frobenius(a, b):  # TODO: Parallelise this. Replace 'out' with tensor
+def frobenius(a, b):
     try:
-        out = []
-        for x in a:
-            out.append(torch.trace(torch.conj(torch.transpose(x, 0, 1)) @ b))
-        return out
-
-    except AttributeError:
+        return torch.vmap(torch.trace)(torch.matmul(torch.conj(torch.transpose(a, 1, -1)), b))
+    except RuntimeError:
         return torch.trace(torch.conj(torch.transpose(a, 0, 1)) @ b)
 
 
