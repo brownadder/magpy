@@ -163,6 +163,17 @@ class HamiltonianOperator:
                 return False
         return True
 
+    def is_interacting(self):
+        for ps in self.data.values():
+            try:
+                if len(ps.qubits) != 1:
+                    return True
+            except AttributeError:
+                for p in ps:
+                    if len(p.qubits) != 1:
+                        return True
+        return False
+
     @staticmethod
     def __simplify(arrs):
         # Collect all PauliStrings in all lists in arrs.
