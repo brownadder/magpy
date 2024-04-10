@@ -99,6 +99,8 @@ class PauliString:
                 s = PauliString(scale=self.scale + other.scale)
                 s.qubits = self.qubits
                 return s
+            if self == -other:
+                return 0*PauliString.Id()
             return mp.HamiltonianOperator([1, self], [1, other])
         except AttributeError:
             # other is HamiltonianOperator
