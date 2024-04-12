@@ -29,6 +29,7 @@ class FunctionProduct:
 
         self.funcs = {}
         self.scale = 1
+        self.__name__ = "FP"
 
         for f in funcs:
             try:
