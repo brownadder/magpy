@@ -158,12 +158,14 @@ class HamiltonianOperator:
         return out
 
     def is_constant(self):
+        "Return true if the Hamiltonian is time-independent."
         for coeff in self.data:
             if not isinstance(coeff, Number):
                 return False
         return True
 
     def is_interacting(self):
+        """Return true if the Hamiltonian's qubits are interacting."""
         for ps in self.data.values():
             try:
                 if len(ps.qubits) != 1:
