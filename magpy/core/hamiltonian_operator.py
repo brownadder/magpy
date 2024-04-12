@@ -127,7 +127,8 @@ class HamiltonianOperator:
         return out
 
     def __repr__(self):
-        return '{' + ', '.join(f.__name__ + ': ' + str(q) for f, q in self.data.items()) + '}'
+        return '{' + ', '.join((str(f) if isinstance(f, Number)
+                                else f.__name__) + ': ' + str(q) for f, q in self.data.items()) + '}'
 
     def __call__(self, t=None, n=None):
         if n is None:
