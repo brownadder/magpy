@@ -1,5 +1,5 @@
 import torch
-import scipy.integrate
+from scipy.integrate import quad, dblquad
 from abc import ABC, abstractmethod
 import itertools
 from magpy.core import commutator
@@ -42,75 +42,60 @@ class _TimeIndependentQuantumSystem(System):
         self.H = H
         self.rho0 = rho0
         self.tlist = tlist
-        self.states = None
+        self.n_qubits = max(max(n.qubits.keys()) for n in H.data.values())
+        self.states = torch.empty((len(self.tlist), 2**self.n_qubits, 2**self.n_qubits), dtype=torch.complex128)
+        self.states[0] = self.rho0(self.n_qubits)
 
     def evolve(self):
-        self.states = [self.rho0()]
+        self.states = [self.rho0(n=self.n_qubits)]
 
         timestep = self.tlist[1] - self.tlist[0]
-        lhs = torch.matrix_exp(-1j * timestep * self.H())
-        rhs = torch.matrix_exp(1j * timestep * self.H())
+        u = torch.matrix_exp(-1j * timestep * self.H())
+        ut = torch.conj(torch.transpose(1j * timestep * self.H(n=self.n_qubits), 0, 1))
 
         for i in range(len(self.tlist) - 1):
-            self.states.append(lhs @ self.states[i] @ rhs)
+            self.states[i + 1] = u @ self.states[i] @ ut
+
+        self.states = torch.stack(self.states)
 
 
 class _TimeDependentQuantumSystem(System):
-
     def __init__(self, H, rho0, tlist):
         self.H = H
         self.rho0 = rho0
         self.tlist = tlist
-        self.states = None
+        self.n_qubits = max(max(n.qubits.keys()) for n in H.data.values())
+        self.states = torch.empty((len(self.tlist), 2**self.n_qubits, 2**self.n_qubits), dtype=torch.complex128)
+        self.states[0] = self.rho0(self.n_qubits)
 
     def evolve(self):
-        self.states = [self.rho0()]
-
-        unpacked = []
-        for f, h in self.H.data.items():
-            if isinstance(h, list):
-                for e in h:
-                    unpacked.append((f, e))
-            else:
-                unpacked.append((f, h))
+        unpacked = self.__unpack_data()
 
         for i in range(len(self.tlist) - 1):
             omega1 = self.__first_term(self.tlist[i], self.tlist[i+1], unpacked)
-            omega2 = 0.5 * self.__second_term(self.tlist[i], self.tlist[i+1])
-            omega = omega1 + omega2
+            omega2 = -0.5j * self.__second_term(self.tlist[i], self.tlist[i+1], unpacked)
 
-            u = torch.matrix_exp(-1j * omega)
+            u = torch.matrix_exp(-1j * (omega1 + omega2))
             ut = torch.conj(torch.transpose(u, 0, 1))
-            self.states.append(u @ self.states[i] @ ut)
+
+            self.states[i + 1] = u @ self.states[i] @ ut
 
     def __first_term(self, t0, tf, unpacked):
         return sum(
             (f*(tf - t0) if isinstance(f, Number)
-                else scipy.integrate.quad(f, t0, tf)[0]) * h() for f, h in unpacked)
+                else quad(f, t0, tf)[0]) * h(self.n_qubits) for f, h in unpacked)
 
-    def __second_term(self, a, b):
-        ps = self.__unpack_data()
-        pairs = itertools.product(ps, repeat=2)
+    def __second_term(self, t0, tf, unpacked):
+        total = 0
 
-        out = 0
-        for pair in pairs:
-            if pair[0][1] == pair[1][1]:
-                continue
-            out += self.__second_term_integral(pair[0][0], pair[1][0], a, b) * commutator(pair[0][1], pair[1][1])()
+        for i, j in itertools.permutations(range(len(unpacked)), 2):
+            com = commutator(unpacked[i][1], unpacked[j][1])
 
-        return out
+            if (com.scale != 0):
+                c = dblquad(lambda y, x: unpacked[i][0](x) * unpacked[j][0](y), t0, tf, t0, lambda x: x)[0]
+                total += c * com(self.n_qubits)
 
-    def __second_term_integral(self, f, g, t0, tf):
-        if isinstance(f, Number) and isinstance(g, Number):
-            return scipy.integrate.dblquad(lambda y, x: f * g, t0, tf, t0, lambda x: x)[0]
-
-        if isinstance(f, Number):
-            return scipy.integrate.dblquad(lambda y, x: f * g(y), t0, tf, t0, lambda x: x)[0]
-
-        if isinstance(g, Number):
-            return scipy.integrate.dblquad(lambda y, x: f(x) * g, t0, tf, t0, lambda x: x)[0]
-
-        return scipy.integrate.dblquad(lambda y, x: f(x) * g(y), t0, tf, t0, lambda x: x)[0]
+        return total
 
     def __unpack_data(self):
         return [(k, v) for k, items in self.H.data.items() for v in (items if isinstance(items, list) else [items])]
