@@ -177,6 +177,19 @@ class HamiltonianOperator:
                         return True
         return False
 
+    def unpack_data(self):
+        """All function-operator pairs in H, unpacking those with shared functions."""
+        return [(k, v) for k, items in self.data.items() for v in (items if isinstance(items, list) else [items])]
+
+    def funcs(self):
+        """All functions in H."""
+        # return list(self.data.keys())
+        return [u[0] for u in self.unpack_data()]
+    
+    def pauli_operators(self): # TODO: Is there a better name?
+        """All Pauli operators in H."""
+        return [u[1] for u in self.unpack_data()]
+    
     @staticmethod
     def __simplify(arrs):
         # Collect all PauliStrings in all lists in arrs.
