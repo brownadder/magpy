@@ -1,7 +1,6 @@
 import torch
 import functools
 
-
 def kron(*args):  # TODO: Replace this with expsolve.kron
     return functools.reduce(torch.kron, args)
 
@@ -15,3 +14,7 @@ def frobenius(a, b):
 
 def commutator(A, B):
     return A*B - B*A
+
+
+def timegrid(start, stop, step):
+    return torch.arange(start, stop + step, step)
