@@ -24,6 +24,9 @@ class System(ABC):
             An instance representing the quantum system defined
         """
 
+        if isinstance(H, mp.PauliString):
+            H = mp.HamiltonianOperator([1, H])
+
         if H.is_constant():
             return _TimeIndependentQuantumSystem(H, rho0, tlist)
         return _TimeDependentQuantumSystem(H, rho0, tlist)
