@@ -1,6 +1,6 @@
-import magpy as mp
-import torch
 from numbers import Number
+import torch
+import magpy as mp
 
 
 class PauliString:

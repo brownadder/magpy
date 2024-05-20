@@ -1,9 +1,8 @@
-import magpy as mp
-import torch
 from itertools import chain
 from copy import deepcopy
 from numbers import Number
-
+import torch
+import magpy as mp
 
 class HamiltonianOperator:
     """A Hamiltonian operator.
