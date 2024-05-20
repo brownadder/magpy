@@ -13,7 +13,7 @@ The core points are as follows:
 
 ## Setting up a development environment
 
-We strongly working in a [virtual environment](https://docs.python.org/3/library/venv.html).
+We strongly recommend working in a [virtual environment](https://docs.python.org/3/library/venv.html).
 
 Install the [development requirements](requirements/dev.txt) via [pip](https://pip.pypa.io/en/stable/installation/); or, for VS Code, use the extensions for [flake8](https://marketplace.visualstudio.com/items?itemName=ms-python.flake8) and [pylint](https://marketplace.visualstudio.com/items?itemName=ms-python.pylint). See [here](./.vscode/settings.json) for workspace settings.
 
