@@ -1,0 +1,9 @@
+{
+    "flake8.args": [
+        "--max-line-length=120",
+        "--per-file-ignores=\"*/__init__.py: F401  test_*.py: E128\""
+    ],
+    "pylint.args": [
+        "disable=\"C0103\"'"
+    ]
+}
