@@ -41,21 +41,18 @@ class _TimeIndependentQuantumSystem(System):
         self.H = H
         self.rho0 = rho0
         self.tlist = tlist
-        self.n_qubits = max(max(n.qubits.keys()) for n in H.data.values())
+        self.n_qubits = max(max(p.qubits.keys()) for p in H.pauli_operators())
         self.states = torch.empty((len(self.tlist), 2**self.n_qubits, 2**self.n_qubits), dtype=torch.complex128)
         self.states[0] = self.rho0(self.n_qubits)
 
     def evolve(self):
-        self.states = [self.rho0(n=self.n_qubits)]
+        step = self.tlist[1] - self.tlist[0]
 
-        timestep = self.tlist[1] - self.tlist[0]
-        u = torch.matrix_exp(-1j * timestep * self.H())
-        ut = torch.conj(torch.transpose(1j * timestep * self.H(n=self.n_qubits), 0, 1))
+        u = torch.matrix_exp(-1j * step * self.H())
+        ut = torch.conj(torch.transpose(u, 0, 1))
 
         for i in range(len(self.tlist) - 1):
             self.states[i + 1] = u @ self.states[i] @ ut
-
-        self.states = torch.stack(self.states)
 
 
 class _TimeDependentQuantumSystem(System):
@@ -63,38 +60,16 @@ class _TimeDependentQuantumSystem(System):
         self.H = H
         self.rho0 = rho0
         self.tlist = tlist
-        self.n_qubits = max(max(n.qubits.keys()) for n in H.data.values())
+        self.n_qubits = max(max(p.qubits.keys()) for p in H.pauli_operators())
         self.states = torch.empty((len(self.tlist), 2**self.n_qubits, 2**self.n_qubits), dtype=torch.complex128)
         self.states[0] = self.rho0(self.n_qubits)
 
     def evolve(self):
-        unpacked = self.__unpack_data()
+        omega1 = mp.solver.batch_first_term(self.H, self.tlist)
+        omega2 = mp.solver.batch_second_term(self.H, self.tlist)
+
+        u = torch.matrix_exp(-1j * (omega1 + omega2))
+        ut = torch.conj(torch.transpose(u, 1, 2))
 
         for i in range(len(self.tlist) - 1):
-            omega1 = self.__first_term(self.tlist[i], self.tlist[i+1], unpacked)
-            omega2 = -0.5j * self.__second_term(self.tlist[i], self.tlist[i+1], unpacked)
-
-            u = torch.matrix_exp(-1j * (omega1 + omega2))
-            ut = torch.conj(torch.transpose(u, 0, 1))
-
-            self.states[i + 1] = u @ self.states[i] @ ut
-
-    def __first_term(self, t0, tf, unpacked):
-        return sum(
-            (f*(tf - t0) if isinstance(f, Number)
-                else quad(f, t0, tf)[0]) * h(self.n_qubits) for f, h in unpacked)
-
-    def __second_term(self, t0, tf, unpacked):
-        total = 0
-
-        for i, j in itertools.permutations(range(len(unpacked)), 2):
-            com = commutator(unpacked[i][1], unpacked[j][1])
-
-            if (com.scale != 0):
-                c = dblquad(lambda y, x: unpacked[i][0](x) * unpacked[j][0](y), t0, tf, t0, lambda x: x)[0]
-                total += c * com(self.n_qubits)
-
-        return total
-
-    def __unpack_data(self):
-        return [(k, v) for k, items in self.H.data.items() for v in (items if isinstance(items, list) else [items])]
+            self.states[i + 1] = u[i] @ self.states[i] @ ut[i]
