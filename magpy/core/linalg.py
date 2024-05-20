@@ -1,7 +1,7 @@
 import torch
 import functools
 
-def kron(*args):  # TODO: Replace this with expsolve.kron
+def kron(*args):
     return functools.reduce(torch.kron, args)
 
 
