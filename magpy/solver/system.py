@@ -1,10 +1,6 @@
-import torch
-from scipy.integrate import quad, dblquad
 from abc import ABC, abstractmethod
-import itertools
-from magpy.core import commutator
-from numbers import Number
-
+import torch
+import magpy as mp
 
 class System(ABC):
     """A quantum system"""
