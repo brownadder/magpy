@@ -130,9 +130,8 @@ class PauliString:
     @staticmethod
     def X(*args):
         """Multi-qubit operator formed of Pauli X operators."""
-
         return PauliString(x=args if args else 1)
-
+    
     @staticmethod
     def Y(*args):
         """Multi-qubit operator formed of Pauli Y operators."""
