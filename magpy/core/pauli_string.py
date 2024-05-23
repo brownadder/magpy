@@ -3,6 +3,26 @@ import torch
 import magpy as mp
 
 
+def X(*args):
+    """Multi-qubit operator formed of Pauli X operators."""
+    return PauliString(x=args if args else 1)
+
+
+def Y(*args):
+    """Multi-qubit operator formed of Pauli Y operators."""
+    return PauliString(y=args if args else 1)
+
+
+def Z(*args):
+    """Multi-qubit operator formed of Pauli Z operators."""
+    return PauliString(z=args if args else 1)
+
+
+def Id():
+    """The identity operator."""
+    return PauliString()
+
+
 class PauliString:
     """A multi-qubit Pauli operator.
 
@@ -126,26 +146,6 @@ class PauliString:
             qubits[index - 1] = PauliString.matrices[qubit]
 
         return self.scale * mp.kron(*qubits).type(torch.complex128)
-
-    @staticmethod
-    def X(*args):
-        """Multi-qubit operator formed of Pauli X operators."""
-        return PauliString(x=args if args else 1)
-    
-    @staticmethod
-    def Y(*args):
-        """Multi-qubit operator formed of Pauli Y operators."""
-        return PauliString(y=args if args else 1)
-
-    @staticmethod
-    def Z(*args):
-        """Multi-qubit operator formed of Pauli Z operators."""
-        return PauliString(z=args if args else 1)
-
-    @staticmethod
-    def Id():
-        """The identity operator."""
-        return PauliString()
 
     @staticmethod
     def collect(arr):
