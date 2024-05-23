@@ -12,9 +12,5 @@ def frobenius(a, b):
         return torch.trace(torch.conj(torch.transpose(a, 0, 1)) @ b)
 
 
-def commutator(A, B):
-    return A*B - B*A
-
-
 def timegrid(start, stop, step):
     return torch.arange(start, stop + step, step)
