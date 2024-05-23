@@ -65,8 +65,8 @@ class _TimeDependentQuantumSystem(System):
         self.states[0] = self.rho0(self.n_qubits)
 
     def evolve(self):
-        omega1 = mp.solver.batch_first_term(self.H, self.tlist)
-        omega2 = mp.solver.batch_second_term(self.H, self.tlist)
+        omega1 = mp.solver.batch_first_term(self.H, self.tlist, self.n_qubits)
+        omega2 = mp.solver.batch_second_term(self.H, self.tlist, self.n_qubits)
 
         u = torch.matrix_exp(-1j * (omega1 + omega2))
         ut = torch.conj(torch.transpose(u, 1, 2))
