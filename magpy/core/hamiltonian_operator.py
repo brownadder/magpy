@@ -184,11 +184,11 @@ class HamiltonianOperator:
         """All functions in H."""
         # return list(self.data.keys())
         return [u[0] for u in self.unpack_data()]
-    
-    def pauli_operators(self): # TODO: Is there a better name?
+
+    def pauli_operators(self):
         """All Pauli operators in H."""
         return [u[1] for u in self.unpack_data()]
-    
+
     @staticmethod
     def __simplify(arrs):
         # Collect all PauliStrings in all lists in arrs.

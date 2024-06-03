@@ -1,5 +1,5 @@
-import magpy as mp
 from numbers import Number
+import magpy as mp
 
 
 class FunctionProduct:

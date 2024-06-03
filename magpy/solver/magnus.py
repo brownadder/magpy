@@ -12,15 +12,15 @@ References
        "Lie-group methods", *Acta Numerica* 9, 215-365.
 """
 
+from math import sqrt
 import itertools
 import torch
-from math import sqrt
 
 # GL quadrature, degree 3.
-knots = torch.tensor([-sqrt(3/5), 0, sqrt(3/5)], dtype=torch.complex128).reshape((1, 1, 3)) 
+knots = torch.tensor([-sqrt(3/5), 0, sqrt(3/5)], dtype=torch.complex128).reshape((1, 1, 3))
 
-# Pairs of knots at which to evaluate commutator of H for second term quadrature. See Iserles, 2000.
-knot_slice_indices = itertools.combinations(range(3), 2) 
+# Pairs of knots at which to evaluate commutator of H for second term quadrature.
+knot_slice_indices = itertools.combinations(range(3), 2)
 
 weights_first_term = torch.tensor([5/9, 8/9, 5/9])
 weights_second_term = torch.tensor([2,1,2]).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
@@ -54,8 +54,8 @@ def batch_first_term(H, tlist, n_qubits):
     step = tlist[1] - tlist[0]
 
     z = 0.5*step*knots.expand(n, -1, -1) + (t0 + step*(torch.arange(n) + 0.5)).reshape((n, 1, 1)).expand(-1, -1, 3)
-    foo = tuple(torch.ones(z.shape)*weights_first_term if f == 1 else f(z)*weights_first_term for f in H.funcs())
-    a = 0.5 * step * torch.sum(torch.cat(foo, 1), 2)
+    zw = tuple(torch.ones(z.shape)*weights_first_term if f == 1 else f(z)*weights_first_term for f in H.funcs())
+    a = 0.5 * step * torch.sum(torch.cat(zw, 1), 2)
 
     return torch.tensordot(a, torch.stack([p(n_qubits) for p in H.pauli_operators()]), 1)
 
@@ -85,7 +85,7 @@ def batch_second_term(H, tlist, n_qubits):
 
     n = len(tlist) - 1
     commutators = torch.stack([__eval_commutator(H, tlist, i, j, n, n_qubits) for i, j in knot_slice_indices])
-    
+
     return weights_second_term_coeff * torch.sum(commutators * weights_second_term, 0)
 
 
@@ -96,7 +96,7 @@ def __eval_commutator(H, tlist, i, j, n, n_qubits):
     step = tlist[1] - tlist[0]
     funcs = H.funcs()
 
-    z = (0.5*step*knots.expand(n, -1, -1) 
+    z = (0.5*step*knots.expand(n, -1, -1)
          + (t0 + step*(torch.arange(n) + 0.5)).reshape((n, 1, 1)).expand(-1, -1, 3)).squeeze()
     z_slice = torch.stack((z[:,i],z[:,j])).transpose(0, 1)
 

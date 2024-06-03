@@ -1,5 +1,5 @@
-import torch
 import functools
+import torch
 
 def kron(*args):
     return functools.reduce(torch.kron, args)
