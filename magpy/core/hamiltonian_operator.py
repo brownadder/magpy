@@ -148,13 +148,13 @@ class HamiltonianOperator:
         out = 0
         for coeff, ps in self.data.items():
             try:
-                out += coeff(t) * ps(n).type(torch.complex128)
+                out += coeff(torch.tensor(t)) * ps(n).type(torch.complex128)
             except TypeError:
                 if isinstance(coeff, Number):
                     out += coeff * ps(n).type(torch.complex128)
                 else:
                     for p in ps:
-                        out += coeff(t) * p(n).type(torch.complex128)
+                        out += coeff(torch.tensor(t)) * p(n).type(torch.complex128)
 
         return out.to(_DEVICE_CONTEXT.device)
 
