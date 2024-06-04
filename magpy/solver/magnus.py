@@ -46,7 +46,8 @@ def batch_first_term(H, tlist, n_qubits):
 
     z = 0.5*step*knots.expand(n, -1, -1) + (t0 + step*(torch.arange(n).to(_DEVICE_CONTEXT.device) + 0.5)) \
         .reshape((n, 1, 1)).expand(-1, -1, 3)
-    zw = tuple(torch.ones(z.shape)*weights_first_term if f == 1 else f(z)*weights_first_term for f in H.funcs())
+    zw = tuple(torch.ones(z.shape).to(_DEVICE_CONTEXT.device)*weights_first_term if f == 1 
+               else f(z)*weights_first_term for f in H.funcs())
     a = 0.5 * step * torch.sum(torch.cat(zw, 1), 2)
 
     return torch.tensordot(a, torch.stack([p(n_qubits) for p in H.pauli_operators()]), 1)
