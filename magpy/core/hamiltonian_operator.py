@@ -3,6 +3,7 @@ from copy import deepcopy
 from numbers import Number
 import torch
 import magpy as mp
+from .._device import _DEVICE_CONTEXT
 
 class HamiltonianOperator:
     """A Hamiltonian operator.
@@ -155,7 +156,7 @@ class HamiltonianOperator:
                     for p in ps:
                         out += coeff(t) * p(n).type(torch.complex128)
 
-        return out
+        return out.to(_DEVICE_CONTEXT.device)
 
     def is_constant(self):
         "Return true if the Hamiltonian is time-independent."

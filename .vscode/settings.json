@@ -4,7 +4,7 @@
         "--per-file-ignores=\"*/__init__.py: F401  test_*.py: E128\""
     ],
     "pylint.args": [
-        "--disable=C0103,C0114",
+        "--disable=C0103,C0114,C0415",
         "--max-line-length=120"
     ],
     "autoDocstring.docstringFormat": "numpy"

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import torch
 import magpy as mp
+from .._device import _DEVICE_CONTEXT
 
 class System(ABC):
     """A quantum system"""
@@ -42,7 +43,8 @@ class _TimeIndependentQuantumSystem(System):
         self.rho0 = rho0
         self.tlist = tlist
         self.n_qubits = max(max(p.qubits.keys()) for p in H.pauli_operators())
-        self.states = torch.empty((len(self.tlist), 2**self.n_qubits, 2**self.n_qubits), dtype=torch.complex128)
+        self.states = torch.empty((len(self.tlist), 2**self.n_qubits, 2**self.n_qubits), dtype=torch.complex128) \
+            .to(_DEVICE_CONTEXT.device)
         self.states[0] = self.rho0(self.n_qubits)
 
     def evolve(self):
@@ -61,7 +63,8 @@ class _TimeDependentQuantumSystem(System):
         self.rho0 = rho0
         self.tlist = tlist
         self.n_qubits = max(max(p.qubits.keys()) for p in H.pauli_operators())
-        self.states = torch.empty((len(self.tlist), 2**self.n_qubits, 2**self.n_qubits), dtype=torch.complex128)
+        self.states = torch.empty((len(self.tlist), 2**self.n_qubits, 2**self.n_qubits), dtype=torch.complex128) \
+            .to(_DEVICE_CONTEXT.device)
         self.states[0] = self.rho0(self.n_qubits)
 
     def evolve(self):

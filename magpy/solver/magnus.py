@@ -12,19 +12,8 @@ References
        "Lie-group methods", *Acta Numerica* 9, 215-365.
 """
 
-from math import sqrt
-import itertools
 import torch
-
-# GL quadrature, degree 3.
-knots = torch.tensor([-sqrt(3/5), 0, sqrt(3/5)], dtype=torch.complex128).reshape((1, 1, 3))
-
-# Pairs of knots at which to evaluate commutator of H for second term quadrature.
-knot_slice_indices = itertools.combinations(range(3), 2)
-
-weights_first_term = torch.tensor([5/9, 8/9, 5/9])
-weights_second_term = torch.tensor([2,1,2]).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-weights_second_term_coeff = sqrt(15) / 54
+from .._device import _DEVICE_CONTEXT
 
 def batch_first_term(H, tlist, n_qubits):
     """The first term of the Magnus expansion, evaluated across each given
@@ -49,11 +38,14 @@ def batch_first_term(H, tlist, n_qubits):
         Batch first term values
     """
 
+    from ._gl import knots, weights_first_term
+
     t0 = tlist[0]
     n = len(tlist) - 1
     step = tlist[1] - tlist[0]
 
-    z = 0.5*step*knots.expand(n, -1, -1) + (t0 + step*(torch.arange(n) + 0.5)).reshape((n, 1, 1)).expand(-1, -1, 3)
+    z = 0.5*step*knots.expand(n, -1, -1) + (t0 + step*(torch.arange(n).to(_DEVICE_CONTEXT.device) + 0.5)) \
+        .reshape((n, 1, 1)).expand(-1, -1, 3)
     zw = tuple(torch.ones(z.shape)*weights_first_term if f == 1 else f(z)*weights_first_term for f in H.funcs())
     a = 0.5 * step * torch.sum(torch.cat(zw, 1), 2)
 
@@ -83,6 +75,8 @@ def batch_second_term(H, tlist, n_qubits):
         Batch second term values
     """
 
+    from ._gl import knot_slice_indices, weights_second_term, weights_second_term_coeff
+
     n = len(tlist) - 1
     commutators = torch.stack([__eval_commutator(H, tlist, i, j, n, n_qubits) for i, j in knot_slice_indices])
 
@@ -92,16 +86,20 @@ def batch_second_term(H, tlist, n_qubits):
 def __eval_commutator(H, tlist, i, j, n, n_qubits):
     # Evaluate the commutator of H at slices i and j of the GL knots over n intervals.
 
+    from ._gl import knots
+
     t0 = tlist[0]
     step = tlist[1] - tlist[0]
     funcs = H.funcs()
 
     z = (0.5*step*knots.expand(n, -1, -1)
-         + (t0 + step*(torch.arange(n) + 0.5)).reshape((n, 1, 1)).expand(-1, -1, 3)).squeeze()
+        + (t0 + step*(torch.arange(n).to(_DEVICE_CONTEXT.device) + 0.5)).reshape((n, 1, 1)).expand(-1, -1, 3)) \
+            .squeeze()
     z_slice = torch.stack((z[:,i],z[:,j])).transpose(0, 1)
 
-    s = torch.stack([p(n_qubits) for p in H.pauli_operators()])
-    f_vals = torch.tensor([[[1 if f == 1 else f(knot) for f in funcs] for knot in knots] for knots in z_slice])
+    s = torch.stack([p(n_qubits) for p in H.pauli_operators()]).to(_DEVICE_CONTEXT.device)
+    f_vals = torch.tensor([[[1 if f == 1 else f(knot) for f in funcs] for knot in knots] for knots in z_slice]) \
+        .to(_DEVICE_CONTEXT.device)
     f_vals_outer_prod = torch.func.vmap(lambda p : torch.outer(p[0], p[1]))(f_vals).unsqueeze(-1).unsqueeze(-1)
     s_outer_prod = torch.einsum('aij,bjk->abik', s, s)
 

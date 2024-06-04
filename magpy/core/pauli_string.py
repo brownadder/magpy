@@ -1,6 +1,7 @@
 from numbers import Number
 import torch
 import magpy as mp
+from .._device import _DEVICE_CONTEXT
 
 
 def X(*args):
@@ -145,7 +146,7 @@ class PauliString:
         for index, qubit in self.qubits.items():
             qubits[index - 1] = PauliString.matrices[qubit]
 
-        return self.scale * mp.kron(*qubits).type(torch.complex128)
+        return self.scale * mp.kron(*qubits).type(torch.complex128).to(_DEVICE_CONTEXT.device)
 
     @staticmethod
     def collect(arr):
