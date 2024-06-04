@@ -1,0 +1,7 @@
+{
+    "recommendations": [
+        "njpwerner.autodocstring",
+        "ms-python.flake8",
+        "ms-python.pylint"
+    ]
+}
