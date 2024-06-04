@@ -1,4 +1,10 @@
 from .core import PauliString, X, Y, Z, FunctionProduct, HamiltonianOperator, kron, frobenius, timegrid
+from .solver import System
+
+__all__ = [
+    'PauliString', 'X', 'Y', 'Z', 'FunctionProduct', 'HamiltonianOperator', 'kron', 'frobenius', 'timegrid', 'System'
+]
+
 
 def set_device(device):
     """Set the device to use when evaluating MagPy objects and
