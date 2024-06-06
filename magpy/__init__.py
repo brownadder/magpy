@@ -1,8 +1,8 @@
-from .core import PauliString, X, Y, Z, FunctionProduct, HamiltonianOperator, kron, frobenius, timegrid
+from .core import PauliString, X, Y, Z, Id, FunctionProduct, HamiltonianOperator, kron, frobenius, timegrid
 from .solver import System
 
 __all__ = [
-    'PauliString', 'X', 'Y', 'Z', 'FunctionProduct', 'HamiltonianOperator', 'kron', 'frobenius', 'timegrid', 'System'
+    'PauliString', 'X', 'Y', 'Z', 'Id', 'FunctionProduct', 'HamiltonianOperator', 'kron', 'frobenius', 'timegrid', 'System'
 ]
 
 
