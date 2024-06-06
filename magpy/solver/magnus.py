@@ -12,6 +12,7 @@ References
        "Lie-group methods", *Acta Numerica* 9, 215-365.
 """
 
+from itertools import combinations
 import torch
 from .._device import _DEVICE_CONTEXT
 
@@ -38,7 +39,7 @@ def batch_first_term(H, tlist, n_qubits):
         Batch first term values
     """
 
-    from ._gl import knots, weights_first_term
+    from ._gl3_quadrature_constants import knots, weights_first_term
 
     t0 = tlist[0]
     n = len(tlist) - 1
@@ -76,10 +77,10 @@ def batch_second_term(H, tlist, n_qubits):
         Batch second term values
     """
 
-    from ._gl import knot_slice_indices, weights_second_term, weights_second_term_coeff
+    from ._gl3_quadrature_constants import weights_second_term, weights_second_term_coeff
 
     n = len(tlist) - 1
-    commutators = torch.stack([__eval_commutator(H, tlist, i, j, n, n_qubits) for i, j in knot_slice_indices])
+    commutators = torch.stack([__eval_commutator(H, tlist, i, j, n, n_qubits) for i, j in combinations(range(3), 2)])
 
     return weights_second_term_coeff * torch.sum(commutators * weights_second_term, 0)
 
@@ -87,7 +88,7 @@ def batch_second_term(H, tlist, n_qubits):
 def __eval_commutator(H, tlist, i, j, n, n_qubits):
     # Evaluate the commutator of H at slices i and j of the GL knots over n intervals.
 
-    from ._gl import knots
+    from ._gl3_quadrature_constants import knots
 
     t0 = tlist[0]
     step = tlist[1] - tlist[0]
