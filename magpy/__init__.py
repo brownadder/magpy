@@ -2,7 +2,8 @@ from .core import PauliString, X, Y, Z, Id, FunctionProduct, HamiltonianOperator
 from .solver import System
 
 __all__ = [
-    'PauliString', 'X', 'Y', 'Z', 'Id', 'FunctionProduct', 'HamiltonianOperator', 'kron', 'frobenius', 'timegrid', 'System'
+    'PauliString', 'X', 'Y', 'Z', 'Id', 'FunctionProduct', 'HamiltonianOperator', 'kron', 'frobenius', 'timegrid',
+    'System'
 ]
 
 
