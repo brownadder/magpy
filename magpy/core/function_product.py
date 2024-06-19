@@ -1,5 +1,5 @@
-import magpy as mp
 from numbers import Number
+import magpy as mp
 
 
 class FunctionProduct:
@@ -29,6 +29,7 @@ class FunctionProduct:
 
         self.funcs = {}
         self.scale = 1
+        self.__name__ = "FP"
 
         for f in funcs:
             try:

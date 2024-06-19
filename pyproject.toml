@@ -24,9 +24,8 @@ keywords = [
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["magpy"]
+[tool.setuptools.packages]
+find = {}
 
 [tool.pytest.ini_options]
 pythonpath = [

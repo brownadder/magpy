@@ -1,5 +1,27 @@
-import magpy as mp
 from numbers import Number
+import torch
+import magpy as mp
+from .._device import _DEVICE_CONTEXT
+
+
+def X(*args):
+    """Multi-qubit operator formed of Pauli X operators."""
+    return PauliString(x=args if args else 1)
+
+
+def Y(*args):
+    """Multi-qubit operator formed of Pauli Y operators."""
+    return PauliString(y=args if args else 1)
+
+
+def Z(*args):
+    """Multi-qubit operator formed of Pauli Z operators."""
+    return PauliString(z=args if args else 1)
+
+
+def Id():
+    """The identity operator."""
+    return PauliString()
 
 
 class PauliString:
@@ -17,6 +39,12 @@ class PauliString:
         Scalar coefficient
     """
 
+    matrices = {
+        'X': torch.tensor([[0, 1], [1, 0]]),
+        'Y': torch.tensor([[0, -1j], [1j, 0]]),
+        'Z': torch.tensor([[1, 0], [0, -1]])
+    }
+
     def __init__(self, x=None, y=None, z=None, scale=1):
         """A multi-qubit Pauli operator.
 
@@ -31,7 +59,7 @@ class PauliString:
         self.qubits = {}
         self.scale = scale
 
-        for q, label in zip([x, y, z], ["x", "y", "z"]):
+        for q, label in zip([x, y, z], ["X", "Y", "Z"]):
             try:
                 self.qubits |= {n: label for n in q}
             except TypeError:
@@ -92,6 +120,8 @@ class PauliString:
                 s = PauliString(scale=self.scale + other.scale)
                 s.qubits = self.qubits
                 return s
+            if self == -other:
+                return 0*PauliString.Id()
             return mp.HamiltonianOperator([1, self], [1, other])
         except AttributeError:
             # other is HamiltonianOperator
@@ -102,29 +132,21 @@ class PauliString:
         s.qubits = self.qubits
         return s
 
+    def __sub__(self, other):
+        return self + -1*other
+
     def __repr__(self):
-        return str(self.scale) + "*" + str(dict(sorted(self.qubits.items()))).replace("'", "")
+        return str(self.scale) + "*" + "*".join(q[1] + str(q[0]) for q in sorted(self.qubits.items()))
 
-    @staticmethod
-    def X(*args):
-        """Multi-qubit operator formed of Pauli X operators."""
+    def __call__(self, n=None):
+        if n is None:
+            n = max(self.qubits)
 
-        return PauliString(x=args if args else 1)
+        qubits = n * [torch.eye(2)]
+        for index, qubit in self.qubits.items():
+            qubits[index - 1] = PauliString.matrices[qubit]
 
-    @staticmethod
-    def Y(*args):
-        """Multi-qubit operator formed of Pauli Y operators."""
-        return PauliString(y=args if args else 1)
-
-    @staticmethod
-    def Z(*args):
-        """Multi-qubit operator formed of Pauli Z operators."""
-        return PauliString(z=args if args else 1)
-
-    @staticmethod
-    def Id():
-        """The identity operator."""
-        return PauliString()
+        return self.scale * mp.kron(*qubits).type(torch.complex128).to(_DEVICE_CONTEXT.device)
 
     @staticmethod
     def collect(arr):
@@ -155,12 +177,12 @@ class PauliString:
                     counts[ps] = scale
         except TypeError:  # arr is single PauliString.
             return arr
-        else:
-            for c in counts:
-                a = PauliString()
-                a.qubits = dict(c)
-                a.scale = counts[c]
-                out.append(a)
+
+        for ps, c in counts.items():
+            a = PauliString()
+            a.qubits = dict(ps)
+            a.scale = c
+            out.append(a)
 
         return out[0] if len(out) == 1 else out
 
@@ -174,5 +196,5 @@ class PauliString:
         # Composition of two Pauli qubits.
         if a == b:
             return None
-        c = "xyz".replace(a, "").replace(b, "")
+        c = "XYZ".replace(a, "").replace(b, "")
         return PauliString.__e_ijk(ord(a), ord(b), ord(c)), c
